@@ -10,7 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -24,6 +24,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
@@ -48,7 +49,9 @@ import com.agrotech.app.navigation.Rotas
 import com.agrotech.app.ui.lote.LoteDetalheViewModel
 import com.agrotech.app.ui.theme.CanvasLight
 import com.agrotech.app.ui.theme.GreenPrimary
+import com.agrotech.app.ui.theme.HairlineLight
 import com.agrotech.app.ui.theme.InkLight
+import com.agrotech.app.ui.theme.MutedTextLight
 import com.agrotech.app.ui.theme.PillShape
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -75,6 +78,22 @@ fun NovoRecebimentoScreen(
         .getStateFlow("ocr_lines", emptyList<String>())
         .collectAsStateWithLifecycle()
 
+    // Paleta explícita pros campos: tudo mais escuro que o default do
+    // Material 3 (que vinha com label/placeholder em cinza-claro demais).
+    val coresCampos = OutlinedTextFieldDefaults.colors(
+        focusedTextColor = InkLight,
+        unfocusedTextColor = InkLight,
+        focusedLabelColor = GreenPrimary,
+        unfocusedLabelColor = InkLight,
+        focusedPlaceholderColor = MutedTextLight,
+        unfocusedPlaceholderColor = MutedTextLight,
+        focusedBorderColor = GreenPrimary,
+        unfocusedBorderColor = HairlineLight,
+        cursorColor = GreenPrimary,
+        focusedTrailingIconColor = GreenPrimary,
+        unfocusedTrailingIconColor = InkLight
+    )
+
     Scaffold(
         containerColor = CanvasLight,
         topBar = {
@@ -82,7 +101,7 @@ fun NovoRecebimentoScreen(
                 title = { Text("Recebimento de ração") },
                 navigationIcon = {
                     IconButton(onClick = aoVoltar) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Voltar")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
                     }
                 },
                 colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
@@ -133,6 +152,7 @@ fun NovoRecebimentoScreen(
                 readOnly = true,
                 label = { Text("Data") },
                 shape = PillShape,
+                colors = coresCampos,
                 modifier = Modifier.fillMaxWidth(),
                 trailingIcon = {
                     TextButton(onClick = { mostrarSeletorData = true }) { Text("Alterar", color = GreenPrimary) }
@@ -144,6 +164,7 @@ fun NovoRecebimentoScreen(
                 onValueChange = { numeroNota = it },
                 label = { Text("N° da nota") },
                 shape = PillShape,
+                colors = coresCampos,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -159,6 +180,7 @@ fun NovoRecebimentoScreen(
                     label = { Text("Tipo de ração") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = tipoMenuAberto) },
                     shape = PillShape,
+                    colors = coresCampos,
                     modifier = Modifier.fillMaxWidth().menuAnchor()
                 )
                 ExposedDropdownMenu(
@@ -183,6 +205,7 @@ fun NovoRecebimentoScreen(
                 label = { Text("Quantidade (kg)") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 shape = PillShape,
+                colors = coresCampos,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )

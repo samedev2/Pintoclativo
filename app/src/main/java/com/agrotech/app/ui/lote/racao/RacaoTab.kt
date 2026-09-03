@@ -1,25 +1,29 @@
 package com.agrotech.app.ui.lote.racao
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,6 +39,7 @@ import com.agrotech.app.ui.components.AgroTechCard
 import com.agrotech.app.ui.components.dashedBorder
 import com.agrotech.app.ui.lote.LoteDetalheViewModel
 import com.agrotech.app.ui.theme.GreenPrimary
+import com.agrotech.app.ui.theme.IconChipBackground
 import com.agrotech.app.ui.theme.InkLight
 import com.agrotech.app.ui.theme.MutedTextLight
 import com.agrotech.app.ui.theme.PillShape
@@ -51,76 +56,101 @@ fun RacaoTab(
     val recebimentos by viewModel.recebimentos.collectAsStateWithLifecycle()
     val formatoData = remember { SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR")) }
 
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { navController.navigate(Rotas.novoRecebimento(loteId)) },
-                containerColor = GreenPrimary,
-                contentColor = Color.White
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        item {
+            // Linha fixa no topo: "Ler NF pela câmera" (à esquerda) + botão "+"
+            // (à direita, com o mesmo verde-claro do IconChip dos score cards).
+            // IntrinsicSize.Max garante que os dois botões fiquem com a mesma
+            // altura mesmo sem definir explicitamente.
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Max),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Novo recebimento")
-            }
-        }
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp, padding.calculateTopPadding() + 8.dp, 16.dp, 96.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            item {
-                Row(
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .weight(1f)
                         .dashedBorder(color = GreenPrimary, shape = PillShape)
                         .clickable { navController.navigate(Rotas.novoRecebimento(loteId)) }
                         .padding(vertical = 14.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Filled.PhotoCamera, contentDescription = null, tint = GreenPrimary)
-                    Text(
-                        "  Ler NF pela câmera",
-                        color = GreenPrimary,
-                        style = MaterialTheme.typography.labelLarge
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Filled.PhotoCamera,
+                            contentDescription = null,
+                            tint = GreenPrimary
+                        )
+                        Text(
+                            "  Ler NF pela câmera",
+                            color = GreenPrimary,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                }
+                // Botão "+" fixo com fundo IconChip (verde-claro) e ícone preto
+                // pra contrastar com o fundo claro. Abre a tela de cadastro
+                // de recebimento (mesma rota que o "Ler NF").
+                Box(
+                    modifier = Modifier
+                        .width(56.dp)
+                        .fillMaxHeight()
+                        .background(IconChipBackground, PillShape)
+                        .clickable { navController.navigate(Rotas.novoRecebimento(loteId)) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Filled.Add,
+                        contentDescription = "Novo recebimento",
+                        tint = Color.Black,
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }
+        }
 
-            if (recebimentos.isEmpty()) {
-                item {
-                    Box(modifier = Modifier.fillMaxWidth().padding(top = 24.dp), contentAlignment = Alignment.Center) {
-                        Text("Nenhum recebimento de ração registrado.", color = MutedTextLight)
-                    }
+        if (recebimentos.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Nenhum recebimento de ração registrado.", color = MutedTextLight)
                 }
-            } else {
-                items(recebimentos, key = { it.id }) { recebimento ->
-                    AgroTechCard(modifier = Modifier.fillMaxWidth()) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text(
-                                    "${formatoData.format(Date(recebimento.data))} · Nota ${recebimento.numeroNota}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = InkLight
-                                )
-                                Text(
-                                    recebimento.tipoRacao.label,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MutedTextLight
-                                )
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    "${recebimento.quantidadeKg} kg",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = InkLight
-                                )
-                                IconButton(onClick = { viewModel.removerRecebimento(recebimento) }) {
-                                    Icon(Icons.Filled.Delete, contentDescription = "Remover", tint = MutedTextLight)
-                                }
+            }
+        } else {
+            items(recebimentos, key = { it.id }) { recebimento ->
+                AgroTechCard(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                "${formatoData.format(Date(recebimento.data))} · Nota ${recebimento.numeroNota}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = InkLight
+                            )
+                            Text(
+                                recebimento.tipoRacao.label,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MutedTextLight
+                            )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "${recebimento.quantidadeKg} kg",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = InkLight
+                            )
+                            IconButton(onClick = { viewModel.removerRecebimento(recebimento) }) {
+                                Icon(Icons.Filled.Delete, contentDescription = "Remover", tint = MutedTextLight)
                             }
                         }
                     }

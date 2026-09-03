@@ -78,17 +78,43 @@ private fun LinhaPeso(
                 background = if (lancado) IconChipBackground else IconChipBackground.copy(alpha = 0.4f)
             )
             Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
-                Text(checkpoint.label, style = MaterialTheme.typography.titleSmall, color = corConteudo)
-                Text("Checkpoint", style = MaterialTheme.typography.bodySmall, color = MutedTextLight)
+                // labelSmall em vez de titleSmall para não competir com a aba.
+                Text(
+                    checkpoint.label,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = corConteudo,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                )
+                Text(
+                    "Checkpoint",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MutedTextLight
+                )
             }
             OutlinedTextField(
                 value = pesoTexto,
                 onValueChange = { pesoTexto = it },
-                placeholder = { Text("— kg") },
+                placeholder = {
+                    // Placeholder com cor mais visível (era 0.6f, agora InkLight direto
+                    // quando o campo não tem foco — fica claramente legível).
+                    Text(
+                        "— kg",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MutedTextLight
+                    )
+                },
                 shape = PillShape,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                colors = OutlinedTextFieldDefaults.colors(unfocusedBorderColor = HairlineLight),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = HairlineLight,
+                    unfocusedPlaceholderColor = MutedTextLight,
+                    focusedPlaceholderColor = MutedTextLight,
+                    focusedBorderColor = GreenPrimary,
+                    focusedTextColor = InkLight,
+                    unfocusedTextColor = InkLight,
+                    cursorColor = GreenPrimary
+                ),
                 modifier = Modifier.weight(1f)
             )
             IconButton(onClick = {

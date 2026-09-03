@@ -17,13 +17,26 @@ import com.agrotech.app.ui.lote.racao.NovoRecebimentoScreen
 import com.agrotech.app.ui.lotes.LotesListScreen
 import com.agrotech.app.ui.lotes.NovoLoteScreen
 import com.agrotech.app.ui.ocr.OcrCameraScreen
+import com.agrotech.app.ui.splash.SplashScreen
 import com.agrotech.app.ui.unidades.UnidadesListScreen
 
 @Composable
 fun AgroTechNavHost() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = Rotas.UNIDADES) {
+    NavHost(navController = navController, startDestination = Rotas.SPLASH) {
+
+        composable(Rotas.SPLASH) {
+            SplashScreen(
+                aoTerminar = {
+                    navController.navigate(Rotas.UNIDADES) {
+                        // Remove a splash do backstack — o usuário não deve
+                        // conseguir voltar pra ela com o botão "voltar".
+                        popUpTo(Rotas.SPLASH) { inclusive = true }
+                    }
+                }
+            )
+        }
 
         composable(Rotas.UNIDADES) {
             UnidadesListScreen(

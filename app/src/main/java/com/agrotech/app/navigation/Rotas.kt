@@ -3,6 +3,8 @@ package com.agrotech.app.navigation
 import android.net.Uri
 
 object Rotas {
+    const val SPLASH = "splash"
+
     const val UNIDADES = "unidades"
 
     const val LOTES = "unidades/{unidadeId}/{unidadeNome}/lotes"
