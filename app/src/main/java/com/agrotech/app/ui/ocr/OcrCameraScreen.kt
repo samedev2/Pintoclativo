@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import com.agrotech.app.ui.theme.GreenPrimary
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -138,6 +139,8 @@ fun OcrCameraScreen(navController: NavController) {
                         }
                     )
                 },
+                containerColor = GreenPrimary,
+                contentColor = androidx.compose.ui.graphics.Color.White,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 32.dp)

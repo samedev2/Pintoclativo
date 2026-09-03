@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="Theme.AgroTech" parent="android:Theme.Material.Light.NoActionBar" />
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!--
+        Tema base da Activity. O AgroTech renderiza 100% em Jetpack Compose
+        (Material 3), então o tema XML existe só para controlar:
+          - splash inicial (windowBackground)
+          - status bar / navigation bar (transparentes p/ edge-to-edge)
+          - textColor da status bar (dark, já que o app é claro)
+        Usar o antigo android:Theme.Material.* aqui faz a status bar ficar
+        com fundo branco e o TopAppBar do Compose "se misturar" com ela,
+        dando a impressão de cor trocada / texto invisível.
+    -->
+    <style name="Theme.AgroTech" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/canvas_light</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:enforceStatusBarContrast" tools:targetApi="29">false</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="29">false</item>
+    </style>
 </resources>

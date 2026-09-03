@@ -2,20 +2,17 @@ package com.agrotech.app.ui.lote.mortalidade
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Card
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -30,7 +27,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.agrotech.app.data.local.entities.DiaSemana
 import com.agrotech.app.data.local.entities.MortalidadeDiariaEntity
+import com.agrotech.app.ui.components.AgroTechCard
+import com.agrotech.app.ui.components.SectionLabel
+import com.agrotech.app.ui.components.WeekSelector
 import com.agrotech.app.ui.lote.LoteDetalheViewModel
+import com.agrotech.app.ui.theme.GreenPrimary
+import com.agrotech.app.ui.theme.InkLight
+import com.agrotech.app.ui.theme.PillShape
 
 private val SEMANAS = (1..8).toList()
 
@@ -40,53 +43,58 @@ fun MortalidadeTab(viewModel: LoteDetalheViewModel) {
     val resumos by viewModel.resumoSemanas.collectAsStateWithLifecycle()
     var semanaSelecionada by remember { mutableStateOf(1) }
 
-    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            SEMANAS.forEach { semana ->
-                FilterChip(
-                    selected = semana == semanaSelecionada,
-                    onClick = { semanaSelecionada = semana },
-                    label = { Text("Sem. $semana") }
-                )
-            }
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            WeekSelector(
+                weeks = SEMANAS,
+                selected = semanaSelecionada,
+                onSelect = { semanaSelecionada = it }
+            )
         }
 
-        Column(modifier = Modifier.padding(top = 16.dp)) {
-            val resumoSemana = resumos.find { it.semana == semanaSelecionada }
-            if (resumoSemana != null) {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(
-                            "Total: ${resumoSemana.total}  ·  %Sem: ${String.format("%.2f", resumoSemana.percentualSemana * 100)}%",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            "%Acum: ${String.format("%.2f", resumoSemana.percentualAcumulado * 100)}%  ·  Saldo: ${resumoSemana.saldo}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+        val resumoSemana = resumos.find { it.semana == semanaSelecionada }
+        if (resumoSemana != null) {
+            item {
+                AgroTechCard(modifier = Modifier.fillMaxWidth()) {
+                    Row(Modifier.fillMaxWidth()) {
+                        ResumoValor("Total", "${resumoSemana.total}", Modifier.weight(1f))
+                        ResumoValor("% Sem", "${String.format("%.2f", resumoSemana.percentualSemana * 100)}%", Modifier.weight(1f))
+                    }
+                    Row(Modifier.fillMaxWidth().padding(top = 12.dp)) {
+                        ResumoValor("% Acum", "${String.format("%.2f", resumoSemana.percentualAcumulado * 100)}%", Modifier.weight(1f))
+                        ResumoValor("Saldo", "${resumoSemana.saldo}", Modifier.weight(1f), destaque = true)
                     }
                 }
             }
-
-            LazyColumn(
-                modifier = Modifier.padding(top = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(DiaSemana.entries, key = { it.name }) { dia ->
-                    val registroExistente = registros.find { it.semana == semanaSelecionada && it.diaSemana == dia }
-                    LinhaDia(
-                        dia = dia,
-                        registroExistente = registroExistente,
-                        aoSalvar = { mortalidade, descarte ->
-                            viewModel.salvarRegistroDiario(semanaSelecionada, dia, mortalidade, descarte)
-                        }
-                    )
-                }
-            }
         }
+
+        items(DiaSemana.entries, key = { it.name }) { dia ->
+            val registroExistente = registros.find { it.semana == semanaSelecionada && it.diaSemana == dia }
+            LinhaDia(
+                dia = dia,
+                registroExistente = registroExistente,
+                aoSalvar = { mortalidade, descarte ->
+                    viewModel.salvarRegistroDiario(semanaSelecionada, dia, mortalidade, descarte)
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ResumoValor(label: String, valor: String, modifier: Modifier = Modifier, destaque: Boolean = false) {
+    Column(modifier = modifier) {
+        SectionLabel(label)
+        Text(
+            valor,
+            style = MaterialTheme.typography.titleLarge,
+            color = if (destaque) GreenPrimary else InkLight,
+            modifier = Modifier.padding(top = 2.dp)
+        )
     }
 }
 
@@ -103,35 +111,35 @@ private fun LinhaDia(
         mutableStateOf(registroExistente?.descarte?.toString() ?: "")
     }
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            dia.label,
-            modifier = Modifier.weight(0.8f).padding(top = 16.dp),
-            style = MaterialTheme.typography.bodyMedium
-        )
-        OutlinedTextField(
-            value = mortalidade,
-            onValueChange = { mortalidade = it },
-            label = { Text("Mort.") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.weight(1f),
-            singleLine = true
-        )
-        OutlinedTextField(
-            value = descarte,
-            onValueChange = { descarte = it },
-            label = { Text("Desc.") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.weight(1f),
-            singleLine = true
-        )
-        IconButton(onClick = {
-            aoSalvar(mortalidade.toIntOrNull() ?: 0, descarte.toIntOrNull() ?: 0)
-        }) {
-            Icon(Icons.Filled.Check, contentDescription = "Salvar dia")
+    AgroTechCard(modifier = Modifier.fillMaxWidth()) {
+        Text(dia.label, style = MaterialTheme.typography.titleSmall, color = InkLight)
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedTextField(
+                value = mortalidade,
+                onValueChange = { mortalidade = it },
+                label = { Text("Mort.") },
+                shape = PillShape,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.weight(1f),
+                singleLine = true
+            )
+            OutlinedTextField(
+                value = descarte,
+                onValueChange = { descarte = it },
+                label = { Text("Desc.") },
+                shape = PillShape,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.weight(1f),
+                singleLine = true
+            )
+            IconButton(onClick = {
+                aoSalvar(mortalidade.toIntOrNull() ?: 0, descarte.toIntOrNull() ?: 0)
+            }) {
+                Icon(Icons.Filled.Check, contentDescription = "Salvar dia", tint = GreenPrimary)
+            }
         }
     }
 }

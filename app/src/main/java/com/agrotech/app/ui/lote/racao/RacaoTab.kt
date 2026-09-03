@@ -1,5 +1,6 @@
 package com.agrotech.app.ui.lote.racao
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,7 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Card
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,11 +26,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.agrotech.app.navigation.Rotas
+import com.agrotech.app.ui.components.AgroTechCard
+import com.agrotech.app.ui.components.dashedBorder
 import com.agrotech.app.ui.lote.LoteDetalheViewModel
+import com.agrotech.app.ui.theme.GreenPrimary
+import com.agrotech.app.ui.theme.InkLight
+import com.agrotech.app.ui.theme.MutedTextLight
+import com.agrotech.app.ui.theme.PillShape
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -45,40 +53,74 @@ fun RacaoTab(
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate(Rotas.novoRecebimento(loteId)) }) {
+            FloatingActionButton(
+                onClick = { navController.navigate(Rotas.novoRecebimento(loteId)) },
+                containerColor = GreenPrimary,
+                contentColor = Color.White
+            ) {
                 Icon(Icons.Filled.Add, contentDescription = "Novo recebimento")
             }
         }
     ) { padding ->
-        if (recebimentos.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text("Nenhum recebimento de ração registrado.")
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp, padding.calculateTopPadding() + 8.dp, 16.dp, 96.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .dashedBorder(color = GreenPrimary, shape = PillShape)
+                        .clickable { navController.navigate(Rotas.novoRecebimento(loteId)) }
+                        .padding(vertical = 14.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Filled.PhotoCamera, contentDescription = null, tint = GreenPrimary)
+                    Text(
+                        "  Ler NF pela câmera",
+                        color = GreenPrimary,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp, padding.calculateTopPadding() + 8.dp, 16.dp, 96.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+
+            if (recebimentos.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(top = 24.dp), contentAlignment = Alignment.Center) {
+                        Text("Nenhum recebimento de ração registrado.", color = MutedTextLight)
+                    }
+                }
+            } else {
                 items(recebimentos, key = { it.id }) { recebimento ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
+                    AgroTechCard(modifier = Modifier.fillMaxWidth()) {
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(12.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
                                 Text(
                                     "${formatoData.format(Date(recebimento.data))} · Nota ${recebimento.numeroNota}",
-                                    style = MaterialTheme.typography.bodyMedium
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = InkLight
                                 )
                                 Text(
-                                    "${recebimento.tipoRacao.label} · ${recebimento.quantidadeKg} kg",
-                                    style = MaterialTheme.typography.bodySmall
+                                    recebimento.tipoRacao.label,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MutedTextLight
                                 )
                             }
-                            IconButton(onClick = { viewModel.removerRecebimento(recebimento) }) {
-                                Icon(Icons.Filled.Delete, contentDescription = "Remover")
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    "${recebimento.quantidadeKg} kg",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = InkLight
+                                )
+                                IconButton(onClick = { viewModel.removerRecebimento(recebimento) }) {
+                                    Icon(Icons.Filled.Delete, contentDescription = "Remover", tint = MutedTextLight)
+                                }
                             }
                         }
                     }

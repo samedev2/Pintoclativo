@@ -1,8 +1,10 @@
 package com.agrotech.app.ui.lote
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -13,6 +15,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +32,11 @@ import com.agrotech.app.ui.lote.dashboard.DashboardTab
 import com.agrotech.app.ui.lote.mortalidade.MortalidadeTab
 import com.agrotech.app.ui.lote.peso.PesoTab
 import com.agrotech.app.ui.lote.racao.RacaoTab
+import com.agrotech.app.ui.theme.CanvasLight
+import com.agrotech.app.ui.theme.GreenPrimary
+import com.agrotech.app.ui.theme.InkLight
+import com.agrotech.app.ui.theme.MutedTextLight
+import com.agrotech.app.ui.theme.SurfaceLight
 
 private val ABAS = listOf("Dashboard", "Mortalidade", "Ração", "Peso")
 
@@ -58,6 +66,7 @@ fun LoteDetalheScreen(
     var abaSelecionada by remember { mutableStateOf(0) }
 
     Scaffold(
+        containerColor = CanvasLight,
         topBar = {
             TopAppBar(
                 title = { Text(lote?.let { "Lote ${it.numeroLote}" } ?: "Lote") },
@@ -65,18 +74,31 @@ fun LoteDetalheScreen(
                     IconButton(onClick = aoVoltar) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Voltar")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = CanvasLight,
+                    titleContentColor = InkLight,
+                    navigationIconContentColor = InkLight,
+                    actionIconContentColor = InkLight
+                ),
+                windowInsets = WindowInsets.statusBars
             )
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             androidx.compose.foundation.layout.Column(modifier = Modifier.fillMaxSize()) {
-                TabRow(selectedTabIndex = abaSelecionada) {
+                TabRow(
+                    selectedTabIndex = abaSelecionada,
+                    containerColor = SurfaceLight,
+                    contentColor = GreenPrimary
+                ) {
                     ABAS.forEachIndexed { indice, titulo ->
                         Tab(
                             selected = abaSelecionada == indice,
                             onClick = { abaSelecionada = indice },
-                            text = { Text(titulo) }
+                            text = { Text(titulo) },
+                            selectedContentColor = GreenPrimary,
+                            unselectedContentColor = MutedTextLight
                         )
                     }
                 }

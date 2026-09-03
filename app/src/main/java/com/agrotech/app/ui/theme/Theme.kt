@@ -11,8 +11,14 @@ private val LightColors = lightColorScheme(
     primary = GreenPrimary,
     onPrimary = OnPrimaryLight,
     secondary = GreenSecondary,
-    background = BackgroundLight,
-    surface = SurfaceLight
+    background = CanvasLight,
+    onBackground = InkLight,
+    surface = SurfaceLight,
+    onSurface = InkLight,
+    surfaceVariant = SurfaceAltLight,
+    onSurfaceVariant = MutedTextLight,
+    outline = HairlineLight,
+    outlineVariant = HairlineLight
 )
 
 private val DarkColors = darkColorScheme(
@@ -24,5 +30,10 @@ private val DarkColors = darkColorScheme(
 @Composable
 fun AgroTechTheme(content: @Composable () -> Unit) {
     val colorScheme = if (isSystemInDarkTheme()) DarkColors else LightColors
-    MaterialTheme(colorScheme = colorScheme, content = content)
+    MaterialTheme(
+        colorScheme = colorScheme,
+        shapes = AgroTechShapes,
+        typography = AgroTechTypography,
+        content = content
+    )
 }

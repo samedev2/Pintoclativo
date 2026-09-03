@@ -38,12 +38,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBars
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import com.agrotech.app.data.local.entities.TipoRacao
 import com.agrotech.app.navigation.Rotas
 import com.agrotech.app.ui.lote.LoteDetalheViewModel
+import com.agrotech.app.ui.theme.CanvasLight
+import com.agrotech.app.ui.theme.GreenPrimary
+import com.agrotech.app.ui.theme.InkLight
+import com.agrotech.app.ui.theme.PillShape
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -70,6 +76,7 @@ fun NovoRecebimentoScreen(
         .collectAsStateWithLifecycle()
 
     Scaffold(
+        containerColor = CanvasLight,
         topBar = {
             TopAppBar(
                 title = { Text("Recebimento de ração") },
@@ -77,7 +84,14 @@ fun NovoRecebimentoScreen(
                     IconButton(onClick = aoVoltar) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Voltar")
                     }
-                }
+                },
+                colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                    containerColor = CanvasLight,
+                    titleContentColor = InkLight,
+                    navigationIconContentColor = InkLight,
+                    actionIconContentColor = InkLight
+                ),
+                windowInsets = WindowInsets.statusBars
             )
         }
     ) { padding ->
@@ -90,10 +104,11 @@ fun NovoRecebimentoScreen(
         ) {
             OutlinedButton(
                 onClick = { navController.navigate(Rotas.OCR_CAMERA) },
+                shape = PillShape,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(Icons.Filled.PhotoCamera, contentDescription = null)
-                Text("  Ler NF pela câmera")
+                Icon(Icons.Filled.PhotoCamera, contentDescription = null, tint = GreenPrimary)
+                Text("  Ler NF pela câmera", color = GreenPrimary)
             }
 
             if (linhasOcr.isNotEmpty()) {
@@ -117,9 +132,10 @@ fun NovoRecebimentoScreen(
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("Data") },
+                shape = PillShape,
                 modifier = Modifier.fillMaxWidth(),
                 trailingIcon = {
-                    TextButton(onClick = { mostrarSeletorData = true }) { Text("Alterar") }
+                    TextButton(onClick = { mostrarSeletorData = true }) { Text("Alterar", color = GreenPrimary) }
                 }
             )
 
@@ -127,6 +143,7 @@ fun NovoRecebimentoScreen(
                 value = numeroNota,
                 onValueChange = { numeroNota = it },
                 label = { Text("N° da nota") },
+                shape = PillShape,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -141,6 +158,7 @@ fun NovoRecebimentoScreen(
                     readOnly = true,
                     label = { Text("Tipo de ração") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = tipoMenuAberto) },
+                    shape = PillShape,
                     modifier = Modifier.fillMaxWidth().menuAnchor()
                 )
                 ExposedDropdownMenu(
@@ -164,6 +182,7 @@ fun NovoRecebimentoScreen(
                 onValueChange = { quantidadeKg = it },
                 label = { Text("Quantidade (kg)") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                shape = PillShape,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -179,9 +198,16 @@ fun NovoRecebimentoScreen(
                     aoVoltar()
                 },
                 enabled = numeroNota.isNotBlank() && quantidadeKg.replace(",", ".").toDoubleOrNull() != null,
+                shape = PillShape,
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = GreenPrimary,
+                    contentColor = androidx.compose.ui.graphics.Color.White,
+                    disabledContainerColor = GreenPrimary.copy(alpha = 0.35f),
+                    disabledContentColor = androidx.compose.ui.graphics.Color.White
+                ),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Salvar recebimento")
+                Text("Salvar recebimento", fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
             }
         }
     }

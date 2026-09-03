@@ -2,6 +2,7 @@ package com.agrotech.app.di
 
 import android.content.Context
 import com.agrotech.app.data.local.AppDatabase
+import com.agrotech.app.data.local.SeedRunner
 import com.agrotech.app.data.repository.LoteRepository
 import com.agrotech.app.data.repository.MortalidadeRepository
 import com.agrotech.app.data.repository.PesagemRepository
@@ -43,5 +44,17 @@ class DefaultAppContainer(context: Context) : AppContainer {
     }
     override val pesagemRepository: PesagemRepository by lazy {
         LocalPesagemRepository(database.pesagemDao())
+    }
+
+    init {
+        // Popula a base com o Lote 2 da Vitallis (dados da ficha anexada)
+        // apenas na primeira execução — não sobrescreve dados do usuário.
+        SeedRunner(
+            unidadeDao = database.unidadeDao(),
+            loteDao = database.loteDao(),
+            mortalidadeDao = database.mortalidadeDao(),
+            pesagemDao = database.pesagemDao(),
+            racaoDao = database.racaoDao()
+        ).popularSeVazio()
     }
 }
