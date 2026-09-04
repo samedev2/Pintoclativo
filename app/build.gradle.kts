@@ -79,5 +79,16 @@ dependencies {
 
     implementation(libs.mlkit.text.recognition)
 
+    // Auth & segurança local (bcrypt + EncryptedSharedPreferences como
+    // equivalente local de HttpOnly — não exposto a outros apps, criptografado).
+    implementation(libs.bcrypt)
+    implementation(libs.androidx.security.crypto)
+
+    // Localização para o check-in (foto + lat/lng + timestamp).
+    implementation(libs.play.services.location)
+
+    // Coil pra exibir a selfie salva em disco.
+    implementation(libs.coil.compose)
+
     testImplementation(libs.junit)
 }
