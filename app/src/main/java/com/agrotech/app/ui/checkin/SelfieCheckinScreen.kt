@@ -32,14 +32,16 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -58,6 +60,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -162,16 +165,72 @@ fun SelfieCheckinScreen(
                 windowInsets = WindowInsets.statusBars
             )
         },
-        floatingActionButton = {
-            if (state.livenessCompleto && !state.processando && !state.aprovado) {
-                FloatingActionButton(
-                    onClick = {
-                        scope.launch { viewModel.capturarEChecar(context, lifecycleOwner) }
-                    },
-                    containerColor = GreenPrimary,
-                    contentColor = Color.White
+        bottomBar = {
+            // Barra inferior fixa com o botão "Realizar Checkin".
+            // Sempre visível (não depende do liveness) porque o
+            // detector de rosto pode não funcionar no device e
+            // a gente ainda quer permitir o check-in.
+            if (!state.aprovado) {
+                androidx.compose.material3.Surface(
+                    color = CanvasLight,
+                    shadowElevation = 0.dp
                 ) {
-                    Icon(Icons.Filled.CameraAlt, contentDescription = "Capturar selfie")
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 12.dp)
+                    ) {
+                        // Badge de status (acima do botão) — informa
+                        // se a liveness foi concluída ou se o detector
+                        // está disponível.
+                        when {
+                            state.processando -> StatusBadge(
+                                texto = "Salvando check-in...",
+                                cor = GreenPrimary
+                            )
+                            state.livenessCompleto -> StatusBadge(
+                                texto = "✓ Liveness concluída — pronto pra capturar",
+                                cor = GreenPrimary
+                            )
+                            !state.faceAnalyzerInicializado -> StatusBadge(
+                                texto = "Detector facial indisponível — captura simples",
+                                cor = MutedTextLight
+                            )
+                            else -> StatusBadge(
+                                texto = "Mova a cabeça nas 4 direções (opcional)",
+                                cor = MutedTextLight
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Button(
+                            onClick = {
+                                scope.launch { viewModel.capturarEChecar(context, lifecycleOwner) }
+                            },
+                            enabled = !state.processando,
+                            shape = RoundedCornerShape(18.dp),
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                containerColor = GreenPrimary,
+                                contentColor = Color.White,
+                                disabledContainerColor = GreenPrimary.copy(alpha = 0.4f),
+                                disabledContentColor = Color.White
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.CameraAlt,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.padding(start = 8.dp))
+                            Text(
+                                "Realizar Checkin",
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -422,4 +481,20 @@ private fun CheckDirecao(
             fontWeight = FontWeight.Medium
         )
     }
+}
+
+/**
+ * Badge de status mostrada acima do botão "Realizar Checkin". Informa
+ * o user sobre o estado atual: salvando, liveness concluída, detector
+ * indisponível, ou aguardando movimentos opcionais.
+ */
+@Composable
+private fun StatusBadge(texto: String, cor: Color) {
+    Text(
+        texto,
+        style = MaterialTheme.typography.bodySmall,
+        color = cor,
+        fontWeight = FontWeight.Medium,
+        modifier = Modifier.fillMaxWidth()
+    )
 }

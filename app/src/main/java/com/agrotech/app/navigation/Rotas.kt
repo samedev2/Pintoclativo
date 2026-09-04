@@ -5,6 +5,14 @@ import android.net.Uri
 object Rotas {
     const val SPLASH = "splash"
 
+    const val LOGIN = "login"
+
+    const val INSTRUCOES_CHECKIN = "instrucoes-checkin/{email}"
+    fun instrucoesCheckin(email: String) = "instrucoes-checkin/${Uri.encode(email)}"
+
+    const val CHECKIN = "checkin/{email}"
+    fun checkin(email: String) = "checkin/${Uri.encode(email)}"
+
     const val UNIDADES = "unidades"
 
     const val LOTES = "unidades/{unidadeId}/{unidadeNome}/lotes"
