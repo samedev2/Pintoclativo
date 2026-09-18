@@ -17,6 +17,29 @@ Estado: **em desenvolvimento (infra config)**.
 - A URL precisa ser `https://` (o Android bloqueia HTTP puro por padrão).
 - As senhas e URLs RTSP das câmeras ficam **no serviço**, nunca no app.
 
+## Estado da implementação no app
+
+- Barra inferior nova: Início, Lançar, Fotos, Relatórios e Mais.
+- Início e Lançar novos, com dados mockados (`data/mock/MockData.kt`). O modelo Room ainda não tem "Aviário".
+- Fotos: a primeira opção é **GranjaCam** (`ui/fotos/GranjaCamPane.kt`), a segunda é Foto (câmera e galeria do celular; a foto ainda não é gravada nem enviada).
+- Mais: atalhos para unidades e lotes (fluxo antigo), scanner de nota fiscal e perfil.
+- Modo mock do GranjaCam: vídeo de teste em `res/raw/granjacam_pintos.mp4` e caixas em `assets/granjacam/deteccoes.json`, geradas offline com o modelo real.
+
+Gerar o APK de teste (mock):
+
+```bash
+./gradlew assembleDebug
+```
+
+Gerar apontando para o serviço (abre o webviewer em vez do mock):
+
+```bash
+./gradlew assembleDebug -PgranjacamUrl=https://cam.exemplo.com
+```
+
+No Windows, se o Gradle falhar com `Unable to establish loopback connection`, use uma pasta temporária curta:
+`TEMP=C:\gtmp TMP=C:\gtmp JAVA_TOOL_OPTIONS=-Djava.io.tmpdir=C:\gtmp`.
+
 ## Arquitetura alvo
 
 ```
