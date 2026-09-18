@@ -1,23 +1,31 @@
 package com.agrotech.app.ui.lotes
 
+import com.agrotech.app.ui.components.AdaptivePair
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -28,28 +36,35 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.statusBars
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.agrotech.app.data.local.entities.Genero
 import com.agrotech.app.data.local.entities.LoteEntity
 import com.agrotech.app.ui.common.rememberAppContainer
+import com.agrotech.app.ui.components.AgroTechTextField
 import com.agrotech.app.ui.components.SectionLabel
 import com.agrotech.app.ui.components.SegmentedControl
-import com.agrotech.app.ui.theme.CanvasLight
 import com.agrotech.app.ui.theme.GreenPrimary
-import com.agrotech.app.ui.theme.InkLight
 import com.agrotech.app.ui.theme.PillShape
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Sub-tela: criar um novo lote dentro de uma unidade.
+ *
+ * **Não tem `Scaffold` próprio** — é conteúdo dentro do
+ * [com.agrotech.app.ui.main.MainScaffold], que já provê bottom bar
+ * e `containerColor`. O botão "Salvar lote" fica num footer
+ * fixo (Surface) que sempre aparece no rodapé, com o formulário
+ * scrollando acima dele.
+ */
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun NovoLoteScreen(
     unidadeId: Long,
@@ -63,19 +78,19 @@ fun NovoLoteScreen(
         }
     )
 
-    var numeroLote by remember { mutableStateOf("") }
-    var genero by remember { mutableStateOf(Genero.MACHO) }
-    var metragem by remember { mutableStateOf("") }
-    var qtdAves by remember { mutableStateOf("") }
-    var linhagem by remember { mutableStateOf("") }
-    var dataAlojamentoMillis by remember { mutableStateOf(System.currentTimeMillis()) }
-    var mostrarSeletorData by remember { mutableStateOf(false) }
-    var densidade by remember { mutableStateOf("") }
-    var densidadeEditadaManualmente by remember { mutableStateOf(false) }
-    var pesoInicial by remember { mutableStateOf("") }
-    var percMortTransp by remember { mutableStateOf("0") }
-    var diasVazio by remember { mutableStateOf("0") }
-    var distribuicaoLote by remember { mutableStateOf("") }
+    var numeroLote by rememberSaveable { mutableStateOf("") }
+    var genero by rememberSaveable { mutableStateOf(Genero.MACHO) }
+    var metragem by rememberSaveable { mutableStateOf("") }
+    var qtdAves by rememberSaveable { mutableStateOf("") }
+    var linhagem by rememberSaveable { mutableStateOf("") }
+    var dataAlojamentoMillis by rememberSaveable { mutableStateOf(System.currentTimeMillis()) }
+    var mostrarSeletorData by rememberSaveable { mutableStateOf(false) }
+    var densidade by rememberSaveable { mutableStateOf("") }
+    var densidadeEditadaManualmente by rememberSaveable { mutableStateOf(false) }
+    var pesoInicial by rememberSaveable { mutableStateOf("") }
+    var percMortTransp by rememberSaveable { mutableStateOf("0") }
+    var diasVazio by rememberSaveable { mutableStateOf("0") }
+    var distribuicaoLote by rememberSaveable { mutableStateOf("") }
 
     val formatoData = remember { SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR")) }
 
@@ -88,188 +103,196 @@ fun NovoLoteScreen(
         if (densidade != formatada) densidade = formatada
     }
 
-    Scaffold(
-        containerColor = CanvasLight,
-        topBar = {
-            TopAppBar(
-                title = { Text("Novo lote") },
-                navigationIcon = {
-                    IconButton(onClick = aoVoltar) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Voltar")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = CanvasLight,
-                    titleContentColor = InkLight,
-                    navigationIconContentColor = InkLight,
-                    actionIconContentColor = InkLight
-                ),
-                windowInsets = WindowInsets.statusBars
-            )
-        },
-        bottomBar = {
-            Button(
-                onClick = {
-                    val lote = LoteEntity(
-                        unidadeId = unidadeId,
-                        numeroLote = numeroLote,
-                        genero = genero,
-                        metragem = metragemValor ?: 0.0,
-                        qtdAves = qtdAvesValor ?: 0,
-                        linhagem = linhagem,
-                        dataAlojamento = dataAlojamentoMillis,
-                        densidade = densidade.replace(",", ".").toDoubleOrNull() ?: 0.0,
-                        pesoInicial = pesoInicial.replace(",", ".").toDoubleOrNull() ?: 0.0,
-                        percMortTransp = percMortTransp.replace(",", ".").toDoubleOrNull() ?: 0.0,
-                        diasVazio = diasVazio.toIntOrNull() ?: 0,
-                        distribuicaoLote = distribuicaoLote
-                    )
-                    viewModel.salvarNovoLote(lote, aoSalvar)
-                },
-                enabled = numeroLote.isNotBlank() && qtdAvesValor != null && qtdAvesValor > 0,
-                shape = PillShape,
-                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                    containerColor = GreenPrimary,
-                    contentColor = Color.White,
-                    disabledContainerColor = GreenPrimary.copy(alpha = 0.35f),
-                    disabledContentColor = Color.White
-                ),
-                modifier = Modifier.fillMaxWidth().padding(16.dp)
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = { Text("Novo lote") },
+            navigationIcon = {
+                IconButton(onClick = aoVoltar) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                actionIconContentColor = MaterialTheme.colorScheme.onSurface
+            ),
+            windowInsets = WindowInsets.statusBars
+        )
+
+        Column(modifier = Modifier.weight(1f)) {
+            // Formulário scrollável
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text("Salvar lote", fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
-            }
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            CampoComLabel("N° do lote") {
-                OutlinedTextField(
-                    value = numeroLote,
-                    onValueChange = { numeroLote = it },
-                    shape = PillShape,
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-            }
-
-            CampoComLabel("Gênero") {
-                SegmentedControl(
-                    options = Genero.entries.map { it.label },
-                    selectedIndex = Genero.entries.indexOf(genero),
-                    onSelect = { genero = Genero.entries[it] }
-                )
-            }
-
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                CampoComLabel("Metragem (m²)", modifier = Modifier.weight(1f)) {
-                    OutlinedTextField(
-                        value = metragem,
-                        onValueChange = { metragem = it },
-                        shape = PillShape,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                CampoComLabel("N° do lote") {
+                    AgroTechTextField(
+                        value = numeroLote,
+                        onValueChange = { numeroLote = it },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
                 }
-                CampoComLabel("Qtd. de aves", modifier = Modifier.weight(1f)) {
-                    OutlinedTextField(
-                        value = qtdAves,
-                        onValueChange = { qtdAves = it },
-                        shape = PillShape,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+
+                CampoComLabel("Gênero") {
+                    SegmentedControl(
+                        options = Genero.entries.map { it.label },
+                        selectedIndex = Genero.entries.indexOf(genero),
+                        onSelect = { genero = Genero.entries[it] }
                     )
                 }
-            }
 
-            CampoComLabel("Linhagem") {
-                OutlinedTextField(
-                    value = linhagem,
-                    onValueChange = { linhagem = it },
-                    shape = PillShape,
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-            }
-
-            CampoComLabel("Data de alojamento") {
-                OutlinedTextField(
-                    value = formatoData.format(java.util.Date(dataAlojamentoMillis)),
-                    onValueChange = {},
-                    readOnly = true,
-                    shape = PillShape,
-                    modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = {
-                        TextButton(onClick = { mostrarSeletorData = true }) {
-                            Text("Alterar", color = GreenPrimary)
-                        }
+                AdaptivePair {
+                    CampoComLabel("Metragem (m²)", modifier = Modifier.weight(1f)) {
+                        AgroTechTextField(
+                            value = metragem,
+                            onValueChange = { metragem = it },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
                     }
-                )
+                    CampoComLabel("Qtd. de aves", modifier = Modifier.weight(1f)) {
+                        AgroTechTextField(
+                            value = qtdAves,
+                            onValueChange = { qtdAves = it },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+                    }
+                }
+
+                CampoComLabel("Linhagem") {
+                    AgroTechTextField(
+                        value = linhagem,
+                        onValueChange = { linhagem = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                }
+
+                CampoComLabel("Data de alojamento") {
+                    AgroTechTextField(
+                        value = formatoData.format(java.util.Date(dataAlojamentoMillis)),
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        trailingIcon = {
+                            TextButton(onClick = { mostrarSeletorData = true }) {
+                                Text("Alterar", color = GreenPrimary)
+                            }
+                        }
+                    )
+                }
+
+                AdaptivePair {
+                    CampoComLabel("Densidade (aves/m²)", modifier = Modifier.weight(1f)) {
+                        AgroTechTextField(
+                            value = densidade,
+                            onValueChange = {
+                                densidade = it
+                                densidadeEditadaManualmente = true
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+                    }
+                    CampoComLabel("Peso inicial (kg)", modifier = Modifier.weight(1f)) {
+                        AgroTechTextField(
+                            value = pesoInicial,
+                            onValueChange = { pesoInicial = it },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+                    }
+                }
+
+                AdaptivePair {
+                    CampoComLabel("% mort. transporte", modifier = Modifier.weight(1f)) {
+                        AgroTechTextField(
+                            value = percMortTransp,
+                            onValueChange = { percMortTransp = it },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+                    }
+                    CampoComLabel("Vazio (dias)", modifier = Modifier.weight(1f)) {
+                        AgroTechTextField(
+                            value = diasVazio,
+                            onValueChange = { diasVazio = it },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+                    }
+                }
+
+                CampoComLabel("Distribuição do lote") {
+                    AgroTechTextField(
+                        value = distribuicaoLote,
+                        onValueChange = { distribuicaoLote = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                }
+
+                // Espaçador pro footer não cobrir o último campo
+
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                CampoComLabel("Densidade (aves/m²)", modifier = Modifier.weight(1f)) {
-                    OutlinedTextField(
-                        value = densidade,
-                        onValueChange = {
-                            densidade = it
-                            densidadeEditadaManualmente = true
+            // Footer fixo com botão "Salvar lote"
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                color = MaterialTheme.colorScheme.background,
+                shadowElevation = 0.dp
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(16.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            val lote = LoteEntity(
+                                unidadeId = unidadeId,
+                                numeroLote = numeroLote,
+                                genero = genero,
+                                metragem = metragemValor ?: 0.0,
+                                qtdAves = qtdAvesValor ?: 0,
+                                linhagem = linhagem,
+                                dataAlojamento = dataAlojamentoMillis,
+                                densidade = densidade.replace(",", ".").toDoubleOrNull() ?: 0.0,
+                                pesoInicial = pesoInicial.replace(",", ".").toDoubleOrNull() ?: 0.0,
+                                percMortTransp = percMortTransp.replace(",", ".").toDoubleOrNull() ?: 0.0,
+                                diasVazio = diasVazio.toIntOrNull() ?: 0,
+                                distribuicaoLote = distribuicaoLote
+                            )
+                            viewModel.salvarNovoLote(lote, aoSalvar)
                         },
+                        enabled = numeroLote.isNotBlank() && qtdAvesValor != null && qtdAvesValor > 0,
                         shape = PillShape,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                            containerColor = GreenPrimary,
+                            contentColor = Color.White,
+                            disabledContainerColor = GreenPrimary.copy(alpha = 0.35f),
+                            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)
+                    ) {
+                        Text("Salvar lote", fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
+                    }
                 }
-                CampoComLabel("Peso inicial (kg)", modifier = Modifier.weight(1f)) {
-                    OutlinedTextField(
-                        value = pesoInicial,
-                        onValueChange = { pesoInicial = it },
-                        shape = PillShape,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-                }
-            }
-
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                CampoComLabel("% mort. transporte", modifier = Modifier.weight(1f)) {
-                    OutlinedTextField(
-                        value = percMortTransp,
-                        onValueChange = { percMortTransp = it },
-                        shape = PillShape,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-                }
-                CampoComLabel("Vazio (dias)", modifier = Modifier.weight(1f)) {
-                    OutlinedTextField(
-                        value = diasVazio,
-                        onValueChange = { diasVazio = it },
-                        shape = PillShape,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-                }
-            }
-
-            CampoComLabel("Distribuição do lote") {
-                OutlinedTextField(
-                    value = distribuicaoLote,
-                    onValueChange = { distribuicaoLote = it },
-                    shape = PillShape,
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
             }
         }
     }

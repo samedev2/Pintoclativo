@@ -9,6 +9,8 @@ class LocalRacaoRepository(private val dao: RacaoDao) : RacaoRepository {
     override fun observarPorLote(loteId: Long): Flow<List<RecebimentoRacaoEntity>> =
         dao.observarPorLote(loteId)
 
+    override fun observarTodos(): Flow<List<RecebimentoRacaoEntity>> = dao.observarTodos()
+
     override suspend fun salvarRecebimento(recebimento: RecebimentoRacaoEntity): Long =
         if (recebimento.id == 0L) {
             dao.inserir(recebimento)

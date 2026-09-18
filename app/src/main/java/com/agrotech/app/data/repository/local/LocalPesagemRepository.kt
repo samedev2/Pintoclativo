@@ -10,6 +10,8 @@ class LocalPesagemRepository(private val dao: PesagemDao) : PesagemRepository {
     override fun observarPorLote(loteId: Long): Flow<List<PesagemEntity>> =
         dao.observarPorLote(loteId)
 
+    override fun observarTodos(): Flow<List<PesagemEntity>> = dao.observarTodos()
+
     override suspend fun salvarPeso(loteId: Long, checkpoint: CheckpointPeso, pesoKg: Double) {
         val existente = dao.buscarRegistro(loteId, checkpoint)
         if (existente != null) {

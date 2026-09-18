@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface RacaoRepository {
     fun observarPorLote(loteId: Long): Flow<List<RecebimentoRacaoEntity>>
+    fun observarTodos(): Flow<List<RecebimentoRacaoEntity>>
     suspend fun salvarRecebimento(recebimento: RecebimentoRacaoEntity): Long
     suspend fun removerRecebimento(recebimento: RecebimentoRacaoEntity)
 }

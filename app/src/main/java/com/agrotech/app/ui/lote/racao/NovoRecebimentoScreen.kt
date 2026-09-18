@@ -1,9 +1,14 @@
 package com.agrotech.app.ui.lote.racao
 
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -11,7 +16,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -22,14 +26,12 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,24 +41,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.statusBars
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import com.agrotech.app.data.local.entities.TipoRacao
-import com.agrotech.app.navigation.Rotas
+import com.agrotech.app.ui.components.AgroTechTextField
 import com.agrotech.app.ui.lote.LoteDetalheViewModel
-import com.agrotech.app.ui.theme.CanvasLight
 import com.agrotech.app.ui.theme.GreenPrimary
-import com.agrotech.app.ui.theme.HairlineLight
-import com.agrotech.app.ui.theme.InkLight
-import com.agrotech.app.ui.theme.MutedTextLight
 import com.agrotech.app.ui.theme.PillShape
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/**
+ * Sub-tela: criar um novo recebimento de ração para um lote.
+ *
+ * **Não tem `Scaffold` próprio** — é conteúdo dentro do
+ * [com.agrotech.app.ui.main.MainScaffold], que já provê bottom bar
+ * e `containerColor`.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NovoRecebimentoScreen(
@@ -65,70 +68,56 @@ fun NovoRecebimentoScreen(
     viewModel: LoteDetalheViewModel,
     aoVoltar: () -> Unit
 ) {
-    var dataMillis by remember { mutableStateOf(System.currentTimeMillis()) }
-    var mostrarSeletorData by remember { mutableStateOf(false) }
-    var numeroNota by remember { mutableStateOf("") }
-    var tipoRacao by remember { mutableStateOf(TipoRacao.PRE_INICIAL) }
-    var tipoMenuAberto by remember { mutableStateOf(false) }
-    var quantidadeKg by remember { mutableStateOf("") }
+    var dataMillis by rememberSaveable { mutableStateOf(System.currentTimeMillis()) }
+    var mostrarSeletorData by rememberSaveable { mutableStateOf(false) }
+    var numeroNota by rememberSaveable { mutableStateOf("") }
+    var tipoRacao by rememberSaveable { mutableStateOf(TipoRacao.PRE_INICIAL) }
+    var tipoMenuAberto by rememberSaveable { mutableStateOf(false) }
+    var quantidadeKg by rememberSaveable { mutableStateOf("") }
 
     val formatoData = remember { SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR")) }
 
-    val linhasOcr by backStackEntry.savedStateHandle
-        .getStateFlow("ocr_lines", emptyList<String>())
-        .collectAsStateWithLifecycle()
+    // Os resultados do OCR são salvos pela OcrCameraScreen no savedStateHandle
+    // do entry anterior da pilha. Quando o usuário clica em "Ler NF pela câmera"
+    // direto da aba Ração, o entry anterior é o LoteDetalheScreen (que hospeda
+    // a aba). Quando o user clica no "+", o entry anterior também é o
+    // LoteDetalheScreen, então lemos do `previousBackStackEntry` para pegar
+    // os resultados tirados antes. Fallback pro `backStackEntry` próprio caso
+    // o caminho seja outro no futuro.
+    val linhasOcr by remember(backStackEntry) {
+        val handleOrigem = navController.previousBackStackEntry?.savedStateHandle
+            ?: backStackEntry.savedStateHandle
+        handleOrigem.getStateFlow("ocr_lines", emptyList<String>())
+    }.collectAsStateWithLifecycle()
 
-    // Paleta explícita pros campos: tudo mais escuro que o default do
-    // Material 3 (que vinha com label/placeholder em cinza-claro demais).
-    val coresCampos = OutlinedTextFieldDefaults.colors(
-        focusedTextColor = InkLight,
-        unfocusedTextColor = InkLight,
-        focusedLabelColor = GreenPrimary,
-        unfocusedLabelColor = InkLight,
-        focusedPlaceholderColor = MutedTextLight,
-        unfocusedPlaceholderColor = MutedTextLight,
-        focusedBorderColor = GreenPrimary,
-        unfocusedBorderColor = HairlineLight,
-        cursorColor = GreenPrimary,
-        focusedTrailingIconColor = GreenPrimary,
-        unfocusedTrailingIconColor = InkLight
-    )
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = { Text("Recebimento de ração") },
+            navigationIcon = {
+                IconButton(onClick = aoVoltar) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                actionIconContentColor = MaterialTheme.colorScheme.onSurface
+            ),
+            windowInsets = WindowInsets.statusBars
+        )
 
-    Scaffold(
-        containerColor = CanvasLight,
-        topBar = {
-            TopAppBar(
-                title = { Text("Recebimento de ração") },
-                navigationIcon = {
-                    IconButton(onClick = aoVoltar) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
-                    }
-                },
-                colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
-                    containerColor = CanvasLight,
-                    titleContentColor = InkLight,
-                    navigationIconContentColor = InkLight,
-                    actionIconContentColor = InkLight
-                ),
-                windowInsets = WindowInsets.statusBars
-            )
-        }
-    ) { padding ->
         Column(
             modifier = Modifier
-                .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedButton(
-                onClick = { navController.navigate(Rotas.OCR_CAMERA) },
-                shape = PillShape,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(Icons.Filled.PhotoCamera, contentDescription = null, tint = GreenPrimary)
-                Text("  Ler NF pela câmera", color = GreenPrimary)
-            }
+            // O botão "Ler NF pela câmera" não fica mais aqui dentro — ele está
+            // no topo da aba Ração (RacaoTab). O OCR é disparado direto de lá
+            // e os resultados voltam pelo savedStateHandle do LoteDetalheScreen,
+            // ficando disponíveis para este formulário quando o user clica no "+".
 
             if (linhasOcr.isNotEmpty()) {
                 Text("Toque para preencher com o texto reconhecido:", style = MaterialTheme.typography.bodySmall)
@@ -146,25 +135,21 @@ fun NovoRecebimentoScreen(
                 }
             }
 
-            OutlinedTextField(
+            AgroTechTextField(
                 value = formatoData.format(Date(dataMillis)),
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("Data") },
-                shape = PillShape,
-                colors = coresCampos,
                 modifier = Modifier.fillMaxWidth(),
                 trailingIcon = {
                     TextButton(onClick = { mostrarSeletorData = true }) { Text("Alterar", color = GreenPrimary) }
                 }
             )
 
-            OutlinedTextField(
+            AgroTechTextField(
                 value = numeroNota,
                 onValueChange = { numeroNota = it },
                 label = { Text("N° da nota") },
-                shape = PillShape,
-                colors = coresCampos,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -173,6 +158,10 @@ fun NovoRecebimentoScreen(
                 expanded = tipoMenuAberto,
                 onExpandedChange = { tipoMenuAberto = it }
             ) {
+                // O dropdown usa OutlinedTextField direto (não AgroTechTextField)
+                // porque precisa do `menuAnchor` — extension específica do
+                // ExposedDropdownMenuBox que não combinaria com nosso wrapper.
+                // Mantém o PillShape + as cores via colors= para ficar igual.
                 OutlinedTextField(
                     value = tipoRacao.label,
                     onValueChange = {},
@@ -180,7 +169,17 @@ fun NovoRecebimentoScreen(
                     label = { Text("Tipo de ração") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = tipoMenuAberto) },
                     shape = PillShape,
-                    colors = coresCampos,
+                    colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedLabelColor = GreenPrimary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurface,
+                        focusedBorderColor = GreenPrimary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                        cursorColor = GreenPrimary,
+                        focusedTrailingIconColor = MaterialTheme.colorScheme.primary,
+                        unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurface
+                    ),
                     modifier = Modifier.fillMaxWidth().menuAnchor()
                 )
                 ExposedDropdownMenu(
@@ -199,13 +198,11 @@ fun NovoRecebimentoScreen(
                 }
             }
 
-            OutlinedTextField(
+            AgroTechTextField(
                 value = quantidadeKg,
                 onValueChange = { quantidadeKg = it },
                 label = { Text("Quantidade (kg)") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                shape = PillShape,
-                colors = coresCampos,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -218,6 +215,12 @@ fun NovoRecebimentoScreen(
                         tipo = tipoRacao,
                         quantidadeKg = quantidadeKg.replace(",", ".").toDoubleOrNull() ?: 0.0
                     )
+                    // Limpa o cache de OCR no entry anterior pra não persistir
+                    // dados de uma foto antiga na próxima vez que o user abrir
+                    // o formulário manual.
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.remove<ArrayList<String>>("ocr_lines")
                     aoVoltar()
                 },
                 enabled = numeroNota.isNotBlank() && quantidadeKg.replace(",", ".").toDoubleOrNull() != null,
@@ -226,9 +229,9 @@ fun NovoRecebimentoScreen(
                     containerColor = GreenPrimary,
                     contentColor = androidx.compose.ui.graphics.Color.White,
                     disabledContainerColor = GreenPrimary.copy(alpha = 0.35f),
-                    disabledContentColor = androidx.compose.ui.graphics.Color.White
+                    disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 ),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)
             ) {
                 Text("Salvar recebimento", fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
             }

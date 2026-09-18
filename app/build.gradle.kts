@@ -78,6 +78,7 @@ dependencies {
     implementation(libs.androidx.camera.view)
 
     implementation(libs.mlkit.text.recognition)
+    implementation(libs.mlkit.barcode.scanning)
 
     // Auth & segurança local (bcrypt + EncryptedSharedPreferences como
     // equivalente local de HttpOnly — não exposto a outros apps, criptografado).

@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface MortalidadeRepository {
     fun observarPorLote(loteId: Long): Flow<List<MortalidadeDiariaEntity>>
+    fun observarTodos(): Flow<List<MortalidadeDiariaEntity>>
     suspend fun salvarRegistroDiario(
         loteId: Long,
         semana: Int,

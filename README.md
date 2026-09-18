@@ -29,7 +29,7 @@ Essa lógica vive isolada em [`MortalidadeCalculator`](app/src/main/java/com/agr
 - **Arquitetura MVVM + Repository**: cada tela tem um `ViewModel` que fala com um repositório via interface (`data/repository`); hoje a única implementação é local, com **Room** (SQLite). A ideia é que, quando o backend com PostgreSQL na nuvem existir, baste plugar uma implementação remota nas mesmas interfaces — sem reescrever telas.
 - **Injeção de dependência manual** (`AppContainer`, em `di/`) em vez de Hilt, para manter o build simples e leve.
 - **Navigation Compose** para navegação entre telas.
-- **CameraX + ML Kit Text Recognition** (100% on-device) para a leitura da nota fiscal: a foto é tirada, o texto é reconhecido e vira sugestões tocáveis para preencher número da nota e quantidade — não um parser totalmente automático, já que o layout das notas varia muito.
+- **CameraX + ML Kit** (no aparelho) para OCR de nota fiscal e leitura demonstrativa de QR Code. O OCR do recebimento de ração sugere os campos reconhecidos; a ação central Escanear apresenta QR Code ou o texto da nota.
 
 ## Estrutura do projeto
 
@@ -44,6 +44,7 @@ app/src/main/java/com/agrotech/app/
   ui/lotes/             lista de lotes de uma unidade + formulário de novo lote
   ui/lote/              detalhe do lote: abas Dashboard, Mortalidade, Ração, Peso
   ui/ocr/                leitura de nota fiscal pela câmera
+  ui/main/               navegação principal com quatro abas e scanner central
   ui/theme/             tema Compose (paleta verde)
 ```
 
@@ -61,7 +62,7 @@ Ou pela linha de comando:
 
 ## Design
 
-O visual do app segue uma base neutra estilo shadcn/ui (cartões brancos, cantos de 24px, bordas finas, tipografia Inter) com o verde do broto da marca como cor de destaque. O mockup das telas mobile está documentado em [`MOCKUP_MEMORY.md`](MOCKUP_MEMORY.md) e exportado em [`docs/AgroTech Mockup.pdf`](docs/AgroTech%20Mockup.pdf).
+O visual do app usa fundo branco, cartões, tipografia Inter e o verde do broto da marca como destaque. A barra inferior respeita a navegação do Android e traz a ação central Escanear. O mockup das telas mobile está documentado em [`MOCKUP_MEMORY.md`](MOCKUP_MEMORY.md) e exportado em [`docs/AgroTech Mockup.pdf`](docs/AgroTech%20Mockup.pdf). As regras atuais estão em [`Prd.md`](Prd.md) e o histórico em [`Memory.md`](Memory.md).
 
 ## Fora do escopo (por enquanto)
 
@@ -69,6 +70,6 @@ A ficha de papel original também tem uma tabela de "Consumo e Troca de Ração"
 
 ## Próximos passos
 
-- Validar e ajustar a UI real em Compose para bater com o mockup aprovado.
+- Validar os fluxos em outros tamanhos de tela além do Galaxy A54.
 - Definir e construir o backend (API + PostgreSQL) que vai alimentar um dashboard externo, substituindo o Room local.
 - Cadastrar novas unidades além da Vitallis.

@@ -1,5 +1,15 @@
 package com.agrotech.app.ui.ocr
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.ui.graphics.Color
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
@@ -11,15 +21,18 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -37,11 +50,17 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.agrotech.app.ui.theme.GreenPrimary
+import com.agrotech.app.ui.theme.PillShape
 import kotlinx.coroutines.launch
 import java.io.File
 
+private enum class ModoLeitura { QR_CODE, NOTA_FISCAL }
+
 @Composable
-fun OcrCameraScreen(navController: NavController) {
+fun OcrCameraScreen(
+    navController: NavController,
+    modoDemonstracao: Boolean = false
+) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val escopo = rememberCoroutineScope()
@@ -62,6 +81,10 @@ fun OcrCameraScreen(navController: NavController) {
     }
 
     var processando by remember { mutableStateOf(false) }
+    var modo by remember {
+        mutableStateOf(if (modoDemonstracao) ModoLeitura.QR_CODE else ModoLeitura.NOTA_FISCAL)
+    }
+    var resultado by remember { mutableStateOf<String?>(null) }
     val previewView = remember { PreviewView(context) }
     var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
 
@@ -98,11 +121,54 @@ fun OcrCameraScreen(navController: NavController) {
             )
         }
 
+        Column(
+            modifier = Modifier.align(Alignment.TopCenter).fillMaxWidth()
+                .background(Color.Black.copy(alpha = 0.72f)).statusBarsPadding().padding(12.dp)
+        ) {
+            androidx.compose.foundation.layout.Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar", tint = Color.White)
+                }
+                Text(
+                    if (modoDemonstracao) "Scanner AgroTech" else "Ler nota fiscal",
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+            Text(
+                if (modo == ModoLeitura.QR_CODE)
+                    "Enquadre o QR Code e toque no botão para ler."
+                else
+                    "Enquadre a nota inteira, com boa iluminação e texto nítido.",
+                color = Color.White, style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+            )
+            if (modoDemonstracao) {
+                androidx.compose.foundation.layout.Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ModoButton(
+                        texto = "QR Code",
+                        selecionado = modo == ModoLeitura.QR_CODE,
+                        aoClicar = { modo = ModoLeitura.QR_CODE; resultado = null },
+                        modifier = Modifier.weight(1f)
+                    )
+                    ModoButton(
+                        texto = "Nota fiscal (OCR)",
+                        selecionado = modo == ModoLeitura.NOTA_FISCAL,
+                        aoClicar = { modo = ModoLeitura.NOTA_FISCAL; resultado = null },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+
         if (processando) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
 
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize()) {
             FloatingActionButton(
                 onClick = {
                     val capture = imageCapture ?: return@FloatingActionButton
@@ -118,11 +184,23 @@ fun OcrCameraScreen(navController: NavController) {
                                 escopo.launch {
                                     try {
                                         val bitmap = BitmapFactory.decodeFile(arquivoTemp.absolutePath)
-                                        val linhas = NfTextRecognizer.reconhecerLinhas(bitmap)
-                                        navController.previousBackStackEntry
-                                            ?.savedStateHandle
-                                            ?.set("ocr_lines", ArrayList(linhas))
-                                        navController.popBackStack()
+                                        if (modo == ModoLeitura.QR_CODE) {
+                                            resultado = QrCodeRecognizer.reconhecer(bitmap)
+                                                ?: "Nenhum QR Code encontrado. Tente aproximar a câmera."
+                                            processando = false
+                                        } else {
+                                            val linhas = NfTextRecognizer.reconhecerLinhas(bitmap)
+                                            if (modoDemonstracao) {
+                                                resultado = linhas.take(8).joinToString("\n")
+                                                    .ifBlank { "Nenhum texto encontrado na nota." }
+                                                processando = false
+                                            } else {
+                                                navController.previousBackStackEntry
+                                                    ?.savedStateHandle
+                                                    ?.set("ocr_lines", ArrayList(linhas))
+                                                navController.popBackStack()
+                                            }
+                                        }
                                     } catch (erro: Exception) {
                                         processando = false
                                         Toast.makeText(context, "Falha ao ler o texto da imagem.", Toast.LENGTH_SHORT).show()
@@ -149,5 +227,63 @@ fun OcrCameraScreen(navController: NavController) {
                 Icon(Icons.Filled.Camera, contentDescription = "Capturar")
             }
         }
+
+        resultado?.let { texto ->
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(24.dp)
+                    .widthIn(max = 440.dp),
+                shape = MaterialTheme.shapes.large,
+                color = Color.White,
+                shadowElevation = 12.dp
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Text(
+                        if (modo == ModoLeitura.QR_CODE) "Resultado do QR Code" else "Texto reconhecido",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        texto,
+                        modifier = Modifier.padding(top = 10.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Button(
+                        onClick = { resultado = null },
+                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary),
+                        shape = PillShape
+                    ) {
+                        Text("Escanear novamente")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ModoButton(
+    texto: String,
+    selecionado: Boolean,
+    aoClicar: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (selecionado) {
+        Button(
+            onClick = aoClicar,
+            modifier = modifier,
+            colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary),
+            shape = PillShape
+        ) { Text(texto) }
+    } else {
+        OutlinedButton(
+            onClick = aoClicar,
+            modifier = modifier,
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+            shape = PillShape
+        ) { Text(texto) }
     }
 }

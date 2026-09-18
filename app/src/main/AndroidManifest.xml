@@ -6,6 +6,11 @@
         android:name="android.hardware.camera.any"
         android:required="false" />
 
+    <!-- Login + check-in com selfie: localização e internet. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <application
         android:name=".AgroTechApplication"
         android:allowBackup="true"

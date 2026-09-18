@@ -35,6 +35,10 @@ interface AppContainer {
     val checkinRepository: CheckinRepository
     val locationProvider: LocationProvider
     val faceAnalyzer: FaceAnalyzer
+    /** Exposição do banco pra views que precisam de DAOs específicos
+     *  (ex.: `RelatorioDetalheViewModel` precisa de `CheckinDao`
+     *  direto pra fazer a query `observarTodos`). */
+    val appDatabase: com.agrotech.app.data.local.AppDatabase
     /**
      * DAO do usuário exposto pra permitir o pré-aquecimento (warm-up)
      * do Room na splash — sem isso, a primeira chamada lazy do
@@ -73,6 +77,7 @@ class DefaultAppContainer(context: Context) : AppContainer {
     }
     override val locationProvider: LocationProvider by lazy { LocationProvider(appContext) }
     override val faceAnalyzer: FaceAnalyzer by lazy { FaceAnalyzer(appContext) }
+    override val appDatabase: com.agrotech.app.data.local.AppDatabase get() = database
     override val userDao: com.agrotech.app.data.local.dao.UserDao by lazy {
         database.userDao()
     }

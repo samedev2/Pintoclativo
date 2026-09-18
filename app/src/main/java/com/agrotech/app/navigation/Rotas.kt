@@ -29,4 +29,16 @@ object Rotas {
     fun novoRecebimento(loteId: Long) = "lotes/$loteId/racao/novo"
 
     const val OCR_CAMERA = "ocr"
+
+    /** Scanner de demonstração aberto pelo botão central: QR Code ou OCR. */
+    const val SCANNER = "scanner"
+
+    /** Tela principal (autenticado). Hospeda a BottomNavBar com 4 abas
+     *  (Início, Lotes, Relatórios, Perfil) + sub-telas de Lotes. */
+    const val MAIN = "main"
+
+    /** Tela de detalhe de um relatório (mortalidade, peso, ração, check-ins).
+     *  [tipo] identifica qual relatório mostrar — ver [RelatorioTipo]. */
+    const val RELATORIO_DETALHE = "relatorios/{tipo}"
+    fun relatorioDetalhe(tipo: String) = "relatorios/$tipo"
 }

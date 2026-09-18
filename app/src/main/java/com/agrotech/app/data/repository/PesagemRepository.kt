@@ -6,5 +6,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface PesagemRepository {
     fun observarPorLote(loteId: Long): Flow<List<PesagemEntity>>
+    fun observarTodos(): Flow<List<PesagemEntity>>
     suspend fun salvarPeso(loteId: Long, checkpoint: CheckpointPeso, pesoKg: Double)
 }

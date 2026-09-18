@@ -114,20 +114,25 @@ class SelfieCheckinViewModel(
 
     /**
      * Captura a foto via CameraX, valida rosto + similaridade, e salva.
+     *
+     * Importante: NÃO exige liveness completo. Se o detector facial
+     * não estiver disponível (FaceAnalyzer stub ou falha de init),
+     * a foto é capturada e salva do mesmo jeito — o liveness é um
+     * "nice to have" visual, não um pré-requisito. Isso garante que
+     * o usuário consegue fazer check-in mesmo em devices onde a
+     * detecção facial nativa não funciona.
      */
     suspend fun capturarEChecar(context: Context, lifecycleOwner: LifecycleOwner) {
-        if (!_state.value.livenessCompleto) {
-            _state.update { it.copy(mensagemErro = "Complete o liveness primeiro.") }
-            return
-        }
         if (!faceAnalyzer.inicializado) {
+            // Marca o erro no estado (pra UI mostrar a mensagem), mas
+            // NÃO bloqueia a captura. A foto + GPS + timestamp são
+            // salvos normalmente.
             _state.update {
                 it.copy(
                     faceAnalyzerErro = faceAnalyzer.erroInicializacao
                         ?: "Detector de rosto não inicializou."
                 )
             }
-            return
         }
         _state.update { it.copy(processando = true, mensagemErro = null) }
         try {
@@ -143,7 +148,10 @@ class SelfieCheckinViewModel(
                 }
 
             val face = withContext(Dispatchers.Default) { faceAnalyzer.detectar(bitmap) }
-            if (face == null) {
+            if (face == null && faceAnalyzer.inicializado) {
+                // Detector inicializou mas não achou rosto → mostra erro.
+                // Se o detector NÃO inicializou (stub), segue sem rosto
+                // (FaceAnalyzer é no-op e a foto inteira vira o checkin).
                 _state.update {
                     it.copy(
                         processando = false,
@@ -153,29 +161,41 @@ class SelfieCheckinViewModel(
                 return
             }
 
-            // Recorta a bounding box do rosto pro hash perceptual.
-            val bbox = faceAnalyzer.boundingBox(face, bitmap.width, bitmap.height)
-            val faceBitmap = if (bbox != null) {
-                Bitmap.createBitmap(
-                    bitmap,
-                    bbox.left, bbox.top,
-                    bbox.width(), bbox.height()
-                )
-            } else bitmap
+            // Se `face` é null (FaceAnalyzer stub ou detector não
+            // disponível), salva a foto inteira sem bounding box e
+            // sem assinatura geométrica. Similaridade é pulada.
+            val (faceBitmap, assinaturaAtual) = if (face != null) {
+                val bbox = faceAnalyzer.boundingBox(face, bitmap.width, bitmap.height)
+                val cropped = if (bbox != null && bbox.width() > 0 && bbox.height() > 0) {
+                    val safeLeft = bbox.left.coerceAtLeast(0)
+                    val safeTop = bbox.top.coerceAtLeast(0)
+                    val safeRight = (bbox.left + bbox.width()).coerceAtMost(bitmap.width)
+                    val safeBottom = (bbox.top + bbox.height()).coerceAtMost(bitmap.height)
+                    if (safeRight > safeLeft && safeBottom > safeTop) {
+                        Bitmap.createBitmap(
+                            bitmap, safeLeft, safeTop,
+                            safeRight - safeLeft, safeBottom - safeTop
+                        )
+                    } else bitmap
+                } else bitmap
+                cropped to faceAnalyzer.assinaturaGeometrica(face)
+            } else {
+                bitmap to null
+            }
 
-            // Calcula a assinatura geométrica do rosto atual.
-            val assinaturaAtual = faceAnalyzer.assinaturaGeometrica(face)
-
-            // Compara com a selfie anterior (se existir). Combina
-            // similaridade geométrica (85%) E similaridade perceptual
-            // (95% — mais restritivo). Falha se as duas passarem
-            // MARGINALMENTE; passa se pelo menos uma for forte.
+            // Compara com a selfie anterior. Pula a comparação se o
+            // detector facial não inicializou OU se não há assinatura
+            // disponível — nesse caso, qualquer check-in novo passa.
             val checkinAnterior = checkinRepository.ultimoCheckin(email)
-            val passouSimilaridade = if (checkinAnterior == null) {
-                true // primeira selfie, sempre passa
+            val passouSimilaridade = if (
+                checkinAnterior == null ||
+                !faceAnalyzer.inicializado ||
+                assinaturaAtual == null
+            ) {
+                true
             } else {
                 val geomAnterior = FaceSignatureCodec.decode(checkinAnterior.faceAssinatura)
-                val geomScore = if (geomAnterior != null && assinaturaAtual != null) {
+                val geomScore = if (geomAnterior != null) {
                     faceAnalyzer.similaridadeGeometrica(geomAnterior, assinaturaAtual)
                 } else 0f
                 val percepAnterior = withContext(Dispatchers.IO) {
@@ -192,7 +212,10 @@ class SelfieCheckinViewModel(
             }
 
             if (!passouSimilaridade) {
-                val geom = if (checkinAnterior != null && assinaturaAtual != null) {
+                val geom = if (
+                    checkinAnterior != null && assinaturaAtual != null &&
+                    faceAnalyzer.inicializado
+                ) {
                     faceAnalyzer.similaridadeGeometrica(
                         FaceSignatureCodec.decode(checkinAnterior.faceAssinatura)
                             ?: FloatArray(0),

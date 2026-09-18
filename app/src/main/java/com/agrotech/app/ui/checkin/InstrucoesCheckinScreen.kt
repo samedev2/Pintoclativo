@@ -39,12 +39,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.agrotech.app.ui.theme.CanvasLight
 import com.agrotech.app.ui.theme.GreenPrimary
-import com.agrotech.app.ui.theme.IconChipBackground
-import com.agrotech.app.ui.theme.InkLight
-import com.agrotech.app.ui.theme.MutedTextLight
-import com.agrotech.app.ui.theme.SurfaceLight
 
 /**
  * Tela de instruções do check-in com selfie. Aparece nos 5 primeiros
@@ -64,14 +59,14 @@ fun InstrucoesCheckinScreen(
     aoVoltar: () -> Unit
 ) {
     Scaffold(
-        containerColor = CanvasLight,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         "Check-in com selfie",
                         fontWeight = FontWeight.SemiBold,
-                        color = InkLight
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 navigationIcon = {
@@ -79,14 +74,14 @@ fun InstrucoesCheckinScreen(
                         Icon(
                             Icons.Filled.ArrowBack,
                             contentDescription = "Voltar",
-                            tint = InkLight
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = CanvasLight,
-                    titleContentColor = InkLight,
-                    navigationIconContentColor = InkLight
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 windowInsets = WindowInsets.statusBars
             )
@@ -102,13 +97,13 @@ fun InstrucoesCheckinScreen(
             Text(
                 "Como funciona",
                 style = MaterialTheme.typography.titleLarge,
-                color = InkLight,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 "Vamos tirar uma foto sua pra registrar a entrada. Leva menos de 30 segundos.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MutedTextLight
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -179,7 +174,7 @@ private fun PassoCheckin(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(SurfaceLight, RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(14.dp))
             .padding(14.dp),
         verticalAlignment = Alignment.Top
     ) {
@@ -187,13 +182,13 @@ private fun PassoCheckin(
         Box(
             modifier = Modifier
                 .size(40.dp)
-                .background(IconChipBackground, CircleShape),
+                .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 icone,
                 contentDescription = null,
-                tint = GreenPrimary,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -203,20 +198,20 @@ private fun PassoCheckin(
             Text(
                 "PASSO $numero",
                 style = MaterialTheme.typography.labelSmall,
-                color = GreenPrimary,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.SemiBold,
                 letterSpacing = 0.8.sp
             )
             Text(
                 titulo,
                 style = MaterialTheme.typography.titleSmall,
-                color = InkLight,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold
             )
             Text(
                 descricao,
                 style = MaterialTheme.typography.bodySmall,
-                color = MutedTextLight
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

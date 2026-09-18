@@ -19,8 +19,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.agrotech.app.ui.theme.GreenPrimary
-import com.agrotech.app.ui.theme.HairlineLight
-import com.agrotech.app.ui.theme.MutedTextLight
 
 /**
  * Gráfico de linha minimalista (sem dependência externa), usado para
@@ -40,6 +38,7 @@ fun SimpleLineChart(
     linhasReferencia: Int = 3
 ) {
     if (data.isEmpty()) return
+    val gridColor = MaterialTheme.colorScheme.outlineVariant
     val maxValor = data.maxOf { it.second }.coerceAtLeast(1f)
     Column(modifier = modifier.fillMaxWidth()) {
         Box(
@@ -57,7 +56,7 @@ fun SimpleLineChart(
                 for (i in 1..linhasReferencia) {
                     val y = h * (i.toFloat() / (linhasReferencia + 1))
                     drawLine(
-                        color = HairlineLight,
+                        color = gridColor,
                         start = androidx.compose.ui.geometry.Offset(0f, y),
                         end = androidx.compose.ui.geometry.Offset(w, y),
                         strokeWidth = 1f,
@@ -91,7 +90,7 @@ fun SimpleLineChart(
                 Text(
                     text = data[idx].first,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MutedTextLight,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
                 )

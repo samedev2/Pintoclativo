@@ -10,14 +10,14 @@
         com fundo branco e o TopAppBar do Compose "se misturar" com ela,
         dando a impressão de cor trocada / texto invisível.
     -->
-    <style name="Theme.AgroTech" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.AgroTech.Base" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/canvas_light</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar">true</item>
         <item name="android:enforceStatusBarContrast" tools:targetApi="29">false</item>
         <item name="android:enforceNavigationBarContrast" tools:targetApi="29">false</item>
     </style>
+    <style name="Theme.AgroTech" parent="Theme.AgroTech.Base" />
 </resources>

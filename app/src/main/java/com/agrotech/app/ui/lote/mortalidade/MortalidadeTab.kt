@@ -14,7 +14,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,12 +27,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.agrotech.app.data.local.entities.DiaSemana
 import com.agrotech.app.data.local.entities.MortalidadeDiariaEntity
 import com.agrotech.app.ui.components.AgroTechCard
+import com.agrotech.app.ui.components.AgroTechTextField
 import com.agrotech.app.ui.components.SectionLabel
 import com.agrotech.app.ui.components.WeekSelector
 import com.agrotech.app.ui.lote.LoteDetalheViewModel
 import com.agrotech.app.ui.theme.GreenPrimary
-import com.agrotech.app.ui.theme.InkLight
-import com.agrotech.app.ui.theme.PillShape
 
 private val SEMANAS = (1..8).toList()
 
@@ -72,7 +70,7 @@ fun MortalidadeTab(viewModel: LoteDetalheViewModel) {
             }
         }
 
-        items(DiaSemana.entries, key = { it.name }) { dia ->
+        items(DiaSemana.entries, key = { "${semanaSelecionada}_${it.name}" }) { dia ->
             val registroExistente = registros.find { it.semana == semanaSelecionada && it.diaSemana == dia }
             LinhaDia(
                 dia = dia,
@@ -92,7 +90,7 @@ private fun ResumoValor(label: String, valor: String, modifier: Modifier = Modif
         Text(
             valor,
             style = MaterialTheme.typography.titleLarge,
-            color = if (destaque) GreenPrimary else InkLight,
+            color = if (destaque) GreenPrimary else MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(top = 2.dp)
         )
     }
@@ -112,25 +110,24 @@ private fun LinhaDia(
     }
 
     AgroTechCard(modifier = Modifier.fillMaxWidth()) {
-        Text(dia.label, style = MaterialTheme.typography.titleSmall, color = InkLight)
+        Text(dia.label, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
         Row(
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            OutlinedTextField(
+            AgroTechTextField(
                 value = mortalidade,
                 onValueChange = { mortalidade = it },
                 label = { Text("Mort.") },
-                shape = PillShape,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.weight(1f),
                 singleLine = true
             )
-            OutlinedTextField(
+            AgroTechTextField(
                 value = descarte,
                 onValueChange = { descarte = it },
                 label = { Text("Desc.") },
-                shape = PillShape,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.weight(1f),
                 singleLine = true
@@ -138,7 +135,7 @@ private fun LinhaDia(
             IconButton(onClick = {
                 aoSalvar(mortalidade.toIntOrNull() ?: 0, descarte.toIntOrNull() ?: 0)
             }) {
-                Icon(Icons.Filled.Check, contentDescription = "Salvar dia", tint = GreenPrimary)
+                Icon(Icons.Filled.Check, contentDescription = "Salvar dia", tint = MaterialTheme.colorScheme.primary)
             }
         }
     }

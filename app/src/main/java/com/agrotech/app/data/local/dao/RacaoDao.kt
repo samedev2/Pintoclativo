@@ -13,6 +13,9 @@ interface RacaoDao {
     @Query("SELECT * FROM recebimento_racao WHERE loteId = :loteId ORDER BY data DESC")
     fun observarPorLote(loteId: Long): Flow<List<RecebimentoRacaoEntity>>
 
+    @Query("SELECT * FROM recebimento_racao ORDER BY data DESC")
+    fun observarTodos(): Flow<List<RecebimentoRacaoEntity>>
+
     @Insert
     suspend fun inserir(recebimento: RecebimentoRacaoEntity): Long
 

@@ -10,6 +10,8 @@ class LocalMortalidadeRepository(private val dao: MortalidadeDao) : MortalidadeR
     override fun observarPorLote(loteId: Long): Flow<List<MortalidadeDiariaEntity>> =
         dao.observarPorLote(loteId)
 
+    override fun observarTodos(): Flow<List<MortalidadeDiariaEntity>> = dao.observarTodos()
+
     override suspend fun salvarRegistroDiario(
         loteId: Long,
         semana: Int,

@@ -15,8 +15,6 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,14 +29,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.agrotech.app.data.local.entities.CheckpointPeso
 import com.agrotech.app.data.local.entities.PesagemEntity
 import com.agrotech.app.ui.components.AgroTechCard
+import com.agrotech.app.ui.components.AgroTechTextField
 import com.agrotech.app.ui.components.IconChip
 import com.agrotech.app.ui.lote.LoteDetalheViewModel
 import com.agrotech.app.ui.theme.GreenPrimary
-import com.agrotech.app.ui.theme.HairlineLight
-import com.agrotech.app.ui.theme.IconChipBackground
-import com.agrotech.app.ui.theme.InkLight
-import com.agrotech.app.ui.theme.MutedTextLight
-import com.agrotech.app.ui.theme.PillShape
 
 @Composable
 fun PesoTab(viewModel: LoteDetalheViewModel) {
@@ -68,14 +62,14 @@ private fun LinhaPeso(
 ) {
     var pesoTexto by remember(registro) { mutableStateOf(registro?.pesoKg?.toString() ?: "") }
     val lancado = registro != null
-    val corConteudo = if (lancado) InkLight else MutedTextLight.copy(alpha = 0.6f)
+    val corConteudo = if (lancado) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
 
     AgroTechCard(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconChip(
                 icon = Icons.Filled.Schedule,
-                tint = if (lancado) GreenPrimary else MutedTextLight,
-                background = if (lancado) IconChipBackground else IconChipBackground.copy(alpha = 0.4f)
+                tint = if (lancado) GreenPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                background = if (lancado) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
             )
             Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
                 // labelSmall em vez de titleSmall para não competir com a aba.
@@ -86,41 +80,32 @@ private fun LinhaPeso(
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
                 )
                 Text(
-                    "Checkpoint",
+                    if (lancado) "Peso registrado" else "Aguardando pesagem",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MutedTextLight
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            OutlinedTextField(
+        }
+        Row(modifier = Modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            AgroTechTextField(
                 value = pesoTexto,
                 onValueChange = { pesoTexto = it },
+                label = { Text("Peso (kg)") },
                 placeholder = {
-                    // Placeholder com cor mais visível (era 0.6f, agora InkLight direto
-                    // quando o campo não tem foco — fica claramente legível).
                     Text(
                         "— kg",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MutedTextLight
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 },
-                shape = PillShape,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = HairlineLight,
-                    unfocusedPlaceholderColor = MutedTextLight,
-                    focusedPlaceholderColor = MutedTextLight,
-                    focusedBorderColor = GreenPrimary,
-                    focusedTextColor = InkLight,
-                    unfocusedTextColor = InkLight,
-                    cursorColor = GreenPrimary
-                ),
                 modifier = Modifier.weight(1f)
             )
             IconButton(onClick = {
                 pesoTexto.replace(",", ".").toDoubleOrNull()?.let { aoSalvar(it) }
             }) {
-                Icon(Icons.Filled.Check, contentDescription = "Salvar peso", tint = GreenPrimary)
+                Icon(Icons.Filled.Check, contentDescription = "Salvar peso", tint = MaterialTheme.colorScheme.primary)
             }
         }
     }

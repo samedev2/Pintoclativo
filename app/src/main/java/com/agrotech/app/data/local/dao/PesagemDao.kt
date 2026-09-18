@@ -13,6 +13,9 @@ interface PesagemDao {
     @Query("SELECT * FROM pesagens WHERE loteId = :loteId")
     fun observarPorLote(loteId: Long): Flow<List<PesagemEntity>>
 
+    @Query("SELECT * FROM pesagens ORDER BY id DESC")
+    fun observarTodos(): Flow<List<PesagemEntity>>
+
     @Query("SELECT * FROM pesagens WHERE loteId = :loteId AND checkpoint = :checkpoint LIMIT 1")
     suspend fun buscarRegistro(loteId: Long, checkpoint: CheckpointPeso): PesagemEntity?
 

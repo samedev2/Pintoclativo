@@ -19,7 +19,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -41,14 +40,11 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.agrotech.app.data.local.entities.UnidadeEntity
 import com.agrotech.app.ui.common.rememberAppContainer
+import com.agrotech.app.ui.components.AgroTechTextField
 import com.agrotech.app.ui.components.EntityListCard
 import com.agrotech.app.ui.components.IconChip
 import com.agrotech.app.ui.components.SectionLabel
-import com.agrotech.app.ui.theme.CanvasLight
 import com.agrotech.app.ui.theme.GreenPrimary
-import com.agrotech.app.ui.theme.InkLight
-import com.agrotech.app.ui.theme.MutedTextLight
-import com.agrotech.app.ui.theme.PillShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,7 +61,7 @@ fun UnidadesListScreen(
     var mostrarDialogo by remember { mutableStateOf(false) }
 
     Scaffold(
-        containerColor = CanvasLight,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
@@ -80,16 +76,16 @@ fun UnidadesListScreen(
                             "AgroTech",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            color = InkLight,
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(start = 10.dp)
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = CanvasLight,
-                    titleContentColor = InkLight,
-                    navigationIconContentColor = InkLight,
-                    actionIconContentColor = InkLight
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 windowInsets = WindowInsets.statusBars
             )
@@ -110,7 +106,7 @@ fun UnidadesListScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Nenhuma unidade cadastrada ainda.", color = MutedTextLight)
+                Text("Nenhuma unidade cadastrada ainda.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
             LazyColumn(
@@ -142,11 +138,10 @@ fun UnidadesListScreen(
             onDismissRequest = { mostrarDialogo = false },
             title = { Text("Nova unidade") },
             text = {
-                OutlinedTextField(
+                AgroTechTextField(
                     value = nome,
                     onValueChange = { nome = it },
                     label = { Text("Nome da unidade") },
-                    shape = PillShape,
                     singleLine = true
                 )
             },

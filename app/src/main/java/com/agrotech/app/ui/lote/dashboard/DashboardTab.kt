@@ -1,5 +1,6 @@
 package com.agrotech.app.ui.lote.dashboard
 
+import com.agrotech.app.ui.components.AdaptivePair
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -24,11 +25,10 @@ import com.agrotech.app.ui.components.AgroTechCard
 import com.agrotech.app.ui.components.SimpleBarChart
 import com.agrotech.app.ui.components.StatCard
 import com.agrotech.app.ui.lote.LoteDetalheViewModel
-import com.agrotech.app.ui.theme.InkLight
-import com.agrotech.app.ui.theme.MutedTextLight
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun DashboardTab(viewModel: LoteDetalheViewModel) {
     val lote by viewModel.lote.collectAsStateWithLifecycle()
@@ -55,7 +55,7 @@ fun DashboardTab(viewModel: LoteDetalheViewModel) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            AdaptivePair {
                 StatCard(
                     icon = Icons.Filled.TrendingUp,
                     label = "Saldo atual",
@@ -71,7 +71,7 @@ fun DashboardTab(viewModel: LoteDetalheViewModel) {
             }
         }
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            AdaptivePair {
                 StatCard(
                     icon = Icons.Filled.Inventory2,
                     label = "Ração recebida",
@@ -89,11 +89,11 @@ fun DashboardTab(viewModel: LoteDetalheViewModel) {
         if (racaoPorSemana.isNotEmpty()) {
             item {
                 AgroTechCard(modifier = Modifier.fillMaxWidth()) {
-                    Text("Ração recebida por semana", style = MaterialTheme.typography.titleSmall, color = InkLight)
+                    Text("Ração recebida por semana", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
                     Text(
                         "Quilos, últimas ${racaoPorSemana.size} semanas",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MutedTextLight
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     SimpleBarChart(
                         data = racaoPorSemana,
@@ -103,10 +103,10 @@ fun DashboardTab(viewModel: LoteDetalheViewModel) {
             }
         }
         item {
-            Text("Pesagens registradas", style = MaterialTheme.typography.titleMedium, color = InkLight)
+            Text("Pesagens registradas", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
         }
         if (pesagens.isEmpty()) {
-            item { Text("Nenhuma pesagem registrada ainda.", color = MutedTextLight) }
+            item { Text("Nenhuma pesagem registrada ainda.", color = MaterialTheme.colorScheme.onSurfaceVariant) }
         } else {
             items(pesagens.sortedBy { it.checkpoint.dias }, key = { it.checkpoint }) { pesagem ->
                 AgroTechCard(modifier = Modifier.fillMaxWidth()) {
@@ -114,8 +114,8 @@ fun DashboardTab(viewModel: LoteDetalheViewModel) {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(pesagem.checkpoint.label, color = InkLight)
-                        Text("${pesagem.pesoKg} kg", color = InkLight)
+                        Text(pesagem.checkpoint.label, color = MaterialTheme.colorScheme.onSurface)
+                        Text("${pesagem.pesoKg} kg", color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             }

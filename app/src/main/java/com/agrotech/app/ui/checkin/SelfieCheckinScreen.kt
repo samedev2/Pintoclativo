@@ -69,11 +69,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.agrotech.app.data.checkin.DirecaoLiveness
 import com.agrotech.app.ui.common.rememberAppContainer
-import com.agrotech.app.ui.theme.CanvasLight
 import com.agrotech.app.ui.theme.GreenPrimary
-import com.agrotech.app.ui.theme.InkLight
-import com.agrotech.app.ui.theme.MutedTextLight
-import com.agrotech.app.ui.theme.SurfaceLight
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
@@ -139,7 +135,7 @@ fun SelfieCheckinScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(
-        containerColor = CanvasLight,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
@@ -148,19 +144,19 @@ fun SelfieCheckinScreen(
                         Text(
                             email,
                             style = MaterialTheme.typography.bodySmall,
-                            color = MutedTextLight
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = aoSair) {
-                        Icon(Icons.Filled.Logout, contentDescription = "Sair", tint = InkLight)
+                        Icon(Icons.Filled.Logout, contentDescription = "Sair", tint = MaterialTheme.colorScheme.onSurface)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = CanvasLight,
-                    titleContentColor = InkLight,
-                    navigationIconContentColor = InkLight
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 windowInsets = WindowInsets.statusBars
             )
@@ -172,7 +168,7 @@ fun SelfieCheckinScreen(
             // a gente ainda quer permitir o check-in.
             if (!state.aprovado) {
                 androidx.compose.material3.Surface(
-                    color = CanvasLight,
+                    color = MaterialTheme.colorScheme.background,
                     shadowElevation = 0.dp
                 ) {
                     Column(
@@ -181,12 +177,16 @@ fun SelfieCheckinScreen(
                             .padding(horizontal = 20.dp, vertical = 12.dp)
                     ) {
                         // Badge de status (acima do botão) — informa
-                        // se a liveness foi concluída ou se o detector
-                        // está disponível.
+                        // se a liveness foi concluída, se o detector
+                        // está disponível, ou se houve erro.
                         when {
                             state.processando -> StatusBadge(
                                 texto = "Salvando check-in...",
                                 cor = GreenPrimary
+                            )
+                            state.mensagemErro != null -> StatusBadge(
+                                texto = state.mensagemErro!!,
+                                cor = MaterialTheme.colorScheme.error
                             )
                             state.livenessCompleto -> StatusBadge(
                                 texto = "✓ Liveness concluída — pronto pra capturar",
@@ -194,11 +194,11 @@ fun SelfieCheckinScreen(
                             )
                             !state.faceAnalyzerInicializado -> StatusBadge(
                                 texto = "Detector facial indisponível — captura simples",
-                                cor = MutedTextLight
+                                cor = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             else -> StatusBadge(
                                 texto = "Mova a cabeça nas 4 direções (opcional)",
-                                cor = MutedTextLight
+                                cor = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         Spacer(modifier = Modifier.height(10.dp))
@@ -259,7 +259,7 @@ fun SelfieCheckinScreen(
                         Text(
                             state.faceAnalyzerErro ?: "Detector de rosto não inicializou.",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MutedTextLight
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(Modifier.height(12.dp))
                         OutlinedButton(
@@ -347,7 +347,7 @@ fun SelfieCheckinScreen(
                     Text(
                         "Mova a cabeça na direção indicada",
                         style = MaterialTheme.typography.titleSmall,
-                        color = InkLight,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.height(12.dp))
@@ -384,7 +384,7 @@ fun SelfieCheckinScreen(
                                 Spacer(modifier = Modifier.padding(start = 8.dp))
                                 Text(
                                     "Analisando selfie...",
-                                    color = MutedTextLight,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             }
@@ -392,7 +392,7 @@ fun SelfieCheckinScreen(
                         state.aprovado -> {
                             Text(
                                 "✓ Check-in aprovado! Entrando...",
-                                color = GreenPrimary,
+                                color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
@@ -406,14 +406,14 @@ fun SelfieCheckinScreen(
                         state.livenessCompleto -> {
                             Text(
                                 "Tudo certo — toque no botão da câmera para capturar.",
-                                color = MutedTextLight,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
                         else -> {
                             Text(
                                 "Aguarde o app detectar seu rosto no preview.",
-                                color = MutedTextLight,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -459,8 +459,8 @@ private fun CheckDirecao(
     concluida: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val background = if (concluida) GreenPrimary else SurfaceLight
-    val content = if (concluida) Color.White else InkLight
+    val background = if (concluida) GreenPrimary else MaterialTheme.colorScheme.surface
+    val content = if (concluida) Color.White else MaterialTheme.colorScheme.onSurface
     Column(
         modifier = modifier
             .background(background, RoundedCornerShape(14.dp))

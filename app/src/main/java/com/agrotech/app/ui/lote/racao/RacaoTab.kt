@@ -39,9 +39,6 @@ import com.agrotech.app.ui.components.AgroTechCard
 import com.agrotech.app.ui.components.dashedBorder
 import com.agrotech.app.ui.lote.LoteDetalheViewModel
 import com.agrotech.app.ui.theme.GreenPrimary
-import com.agrotech.app.ui.theme.IconChipBackground
-import com.agrotech.app.ui.theme.InkLight
-import com.agrotech.app.ui.theme.MutedTextLight
 import com.agrotech.app.ui.theme.PillShape
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -75,8 +72,8 @@ fun RacaoTab(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .dashedBorder(color = GreenPrimary, shape = PillShape)
-                        .clickable { navController.navigate(Rotas.novoRecebimento(loteId)) }
+                        .dashedBorder(color = MaterialTheme.colorScheme.primary, shape = PillShape)
+                        .clickable { navController.navigate(Rotas.OCR_CAMERA) }
                         .padding(vertical = 14.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -88,7 +85,7 @@ fun RacaoTab(
                         )
                         Text(
                             "  Ler NF pela câmera",
-                            color = GreenPrimary,
+                            color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.labelLarge
                         )
                     }
@@ -100,14 +97,14 @@ fun RacaoTab(
                     modifier = Modifier
                         .width(56.dp)
                         .fillMaxHeight()
-                        .background(IconChipBackground, PillShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer, PillShape)
                         .clickable { navController.navigate(Rotas.novoRecebimento(loteId)) },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Filled.Add,
                         contentDescription = "Novo recebimento",
-                        tint = Color.Black,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -120,7 +117,7 @@ fun RacaoTab(
                     modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Nenhum recebimento de ração registrado.", color = MutedTextLight)
+                    Text("Nenhum recebimento de ração registrado.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         } else {
@@ -131,26 +128,26 @@ fun RacaoTab(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
+                        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                             Text(
                                 "${formatoData.format(Date(recebimento.data))} · Nota ${recebimento.numeroNota}",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = InkLight
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 recebimento.tipoRacao.label,
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MutedTextLight
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(horizontalAlignment = Alignment.End) {
                             Text(
                                 "${recebimento.quantidadeKg} kg",
                                 style = MaterialTheme.typography.titleSmall,
-                                color = InkLight
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             IconButton(onClick = { viewModel.removerRecebimento(recebimento) }) {
-                                Icon(Icons.Filled.Delete, contentDescription = "Remover", tint = MutedTextLight)
+                                Icon(Icons.Filled.Delete, contentDescription = "Remover", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
