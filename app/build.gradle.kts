@@ -20,6 +20,12 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        // URL do serviço GranjaCam (análise computacional em outro ambiente).
+        // Vazia = a opção GranjaCam usa o mock local. Preenchida (https://...)
+        // = abre o webviewer do serviço. Ex.: ./gradlew assembleDebug -PgranjacamUrl=https://cam.exemplo.com
+        val granjacamUrl = (project.findProperty("granjacamUrl") as String?) ?: ""
+        buildConfigField("String", "GRANJACAM_BASE_URL", "\"$granjacamUrl\"")
     }
 
     buildTypes {
@@ -43,6 +49,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {
