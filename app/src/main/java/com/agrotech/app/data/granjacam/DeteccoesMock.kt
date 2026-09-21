@@ -3,7 +3,10 @@ package com.agrotech.app.data.granjacam
 import android.content.Context
 import org.json.JSONObject
 
-/** Uma ave detectada num quadro. Caixa normalizada (0 a 1) em relação ao tamanho do vídeo. */
+/** Classe dos baldes amarelos: comedouros fixos, que aparecem nas detecções mas não são aves. */
+const val CLASSE_COMEDOURO = "comedouro"
+
+/** Uma detecção num quadro (ave ou comedouro). Caixa normalizada (0 a 1) em relação ao tamanho do vídeo. */
 data class AveDetectada(
     val id: Int,
     val classe: String,

@@ -9,6 +9,7 @@ import android.webkit.WebViewClient
 import android.widget.VideoView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.agrotech.app.R
 import com.agrotech.app.data.granjacam.AveDetectada
+import com.agrotech.app.data.granjacam.CLASSE_COMEDOURO
 import com.agrotech.app.data.granjacam.DeteccoesMock
 import com.agrotech.app.data.granjacam.GranjaCamConfig
 import com.agrotech.app.ui.components.CartaoNovo
@@ -124,7 +126,7 @@ private fun GranjaCamMock(modifier: Modifier) {
             if (ms < ultimoMs - 1000) vistos.clear() // o vídeo reiniciou (loop)
             ultimoMs = ms
             val quadro = det.quadroEm(ms.toLong())
-            quadro.forEach { vistos.add("${it.classe}${it.id}") }
+            quadro.forEach { if (it.classe != CLASSE_COMEDOURO) vistos.add("${it.classe}${it.id}") }
             aves = quadro
             rastreadas = vistos.size
             delay(33)
@@ -170,10 +172,12 @@ private fun GranjaCamMock(modifier: Modifier) {
             )
         }
 
+        Legenda()
+
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Contador("PINTOS", aves.count { it.classe == "pinto" }, Modifier.weight(1f))
-            Contador("GALINHAS", aves.count { it.classe != "pinto" }, Modifier.weight(1f))
-            Contador("RASTREADAS", rastreadas, Modifier.weight(1f))
+            Contador("GALINHAS", aves.count { it.classe == "galinha" }, Modifier.weight(1f))
+            Contador("COMEDOUROS", aves.count { it.classe == CLASSE_COMEDOURO }, Modifier.weight(1f))
         }
 
         CartaoNovo(modifier = Modifier.fillMaxWidth()) {
@@ -189,10 +193,33 @@ private fun GranjaCamMock(modifier: Modifier) {
                 Spacer(Modifier.width(12.dp))
                 Column {
                     Text("Rastreamento em tempo real", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-                    Text("Cada ave mantém o mesmo número", fontSize = 12.sp, color = Muted)
+                    Text("$rastreadas aves rastreadas · cada ave mantém o mesmo número", fontSize = 12.sp, color = Muted)
                 }
             }
         }
+    }
+}
+
+/** Legenda das cores das caixas: pinto, galinha e comedouro. */
+@Composable
+private fun Legenda() {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        ItemLegenda("Pinto", corDaClasse("pinto"))
+        ItemLegenda("Galinha", corDaClasse("galinha"))
+        ItemLegenda("Comedouro", corDaClasse(CLASSE_COMEDOURO))
+    }
+}
+
+@Composable
+private fun ItemLegenda(nome: String, cor: Int) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(12.dp).border(2.dp, Color(cor), RoundedCornerShape(2.dp)))
+        Spacer(Modifier.width(6.dp))
+        Text(nome, fontSize = 12.sp, color = Muted)
     }
 }
 
@@ -221,34 +248,42 @@ private fun EtiquetaAoVivo(modifier: Modifier) {
 private fun corDaClasse(classe: String): Int = when (classe) {
     "pinto" -> 0xFFFFD23F.toInt()
     "galinha" -> 0xFFFF7A45.toInt()
+    CLASSE_COMEDOURO -> 0xFF14B8A6.toInt()
     else -> 0xFFFF4D6D.toInt()
 }
 
-/** Desenha a caixa e o número de cada ave por cima do vídeo. */
+/** Desenha a caixa de cada ave (com o número) e de cada comedouro (só a caixa) por cima do vídeo. A cor indica a classe (ver [Legenda]). */
 @Composable
 private fun CaixasDasAves(aves: List<AveDetectada>, modifier: Modifier) {
     val texto = remember { Paint().apply { isAntiAlias = true; typeface = Typeface.DEFAULT_BOLD } }
     val fundo = remember { Paint() }
+    // Comedouros primeiro, para as aves ficarem por cima.
+    val ordenadas = remember(aves) { aves.sortedByDescending { it.classe == CLASSE_COMEDOURO } }
     Canvas(modifier) {
         val traco = 1.5.dp.toPx()
-        texto.textSize = 9.dp.toPx()
-        val alturaEtiqueta = 12.dp.toPx()
         drawIntoCanvas { canvas ->
-            aves.forEach { ave ->
+            fun etiqueta(rotulo: String, x: Float, y: Float, cor: Int, corTexto: Int, tamanhoSp: Float, altura: Float) {
+                texto.textSize = tamanhoSp.dp.toPx()
+                val largura = texto.measureText(rotulo) + 6.dp.toPx()
+                fundo.color = cor
+                canvas.nativeCanvas.drawRect(x, y - altura, x + largura, y, fundo)
+                texto.color = corTexto
+                canvas.nativeCanvas.drawText(rotulo, x + 3.dp.toPx(), y - (altura - tamanhoSp.dp.toPx()) / 2f - 1.dp.toPx(), texto)
+            }
+            ordenadas.forEach { ave ->
                 val x = ave.x1 * size.width
                 val y = ave.y1 * size.height
                 val largura = (ave.x2 - ave.x1) * size.width
                 val altura = (ave.y2 - ave.y1) * size.height
                 val cor = corDaClasse(ave.classe)
-                drawRect(Color(cor), Offset(x, y), Size(largura, altura), style = Stroke(traco))
-                // Só rotula pinto quando a caixa é grande o bastante para caber o número.
-                if (ave.classe != "pinto" || largura > 16.dp.toPx()) {
-                    val rotulo = (if (ave.classe == "pinto") "" else ave.classe.replaceFirstChar { it.uppercase() } + " ") + "#" + ave.id
-                    val larguraRotulo = texto.measureText(rotulo) + 6.dp.toPx()
-                    fundo.color = cor
-                    canvas.nativeCanvas.drawRect(x, y - alturaEtiqueta, x + larguraRotulo, y, fundo)
-                    texto.color = 0xFF1A1A1A.toInt()
-                    canvas.nativeCanvas.drawText(rotulo, x + 3.dp.toPx(), y - 2.5.dp.toPx(), texto)
+                if (ave.classe == CLASSE_COMEDOURO) {
+                    drawRect(Color(cor), Offset(x, y), Size(largura, altura), style = Stroke(1.dp.toPx()))
+                } else {
+                    drawRect(Color(cor), Offset(x, y), Size(largura, altura), style = Stroke(traco))
+                    // Só rotula pinto quando a caixa é grande o bastante para caber o número.
+                    if (ave.classe != "pinto" || largura > 16.dp.toPx()) {
+                        etiqueta("#${ave.id}", x, y, cor, 0xFF1A1A1A.toInt(), 9f, 12.dp.toPx())
+                    }
                 }
             }
         }

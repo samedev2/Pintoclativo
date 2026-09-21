@@ -40,6 +40,25 @@ Gerar apontando para o serviço (abre o webviewer em vez do mock):
 No Windows, se o Gradle falhar com `Unable to establish loopback connection`, use uma pasta temporária curta:
 `TEMP=C:\gtmp TMP=C:\gtmp JAVA_TOOL_OPTIONS=-Djava.io.tmpdir=C:\gtmp`.
 
+### Detecções do vídeo de teste (cena de cima)
+
+`assets/granjacam/deteccoes.json` é gerado por `tools/exportar_deteccoes_video.py`, que usa o detector do
+GranjaCam (`pinteiro.pt`) com correções para essa câmera:
+
+- baldes amarelos viram a classe `comedouro` (75 fixos, fora da contagem de aves);
+- caixas sobre copos, contas vermelhas dos fios e objetos parados são descartadas (o quadro 0 do vídeo é o cercado vazio e serve de fundo);
+- a classe da ave vem do **tamanho** (lado maior >= 48 px = galinha, senão pinto), estável por trilha;
+- aves que o modelo não viu (manchas grandes que mudaram em relação ao fundo) entram como galinha;
+- rastreamento ByteTrack (`tools/rastreador_pinteiro_topo.yaml`) mais a identidade persistente do GranjaCam.
+
+```bash
+python tools/exportar_deteccoes_video.py --pesos caminho/pinteiro.pt --granjacam "caminho/PINTASILGO PROJECT"
+```
+
+Limites: sem gabarito manual, a conferência foi visual. Ficam de fora algumas galinhas marrons e escuras
+(cor parecida com o solo) e alguns pintos em aglomerado. Para acertar de vez em outra câmera, retreine o
+detector com quadros dela (fluxo de treino incremental do GranjaCam).
+
 ## Arquitetura alvo
 
 ```
