@@ -67,6 +67,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -631,8 +632,8 @@ private fun EtiquetaAoVivo(modifier: Modifier) {
 private fun corDaClasse(classe: String): Int = when (classe) {
     "pinto" -> 0xFFD08A1D.toInt()
     "galinha" -> 0xFF2F7FD1.toInt()
-    CLASSE_COMEDOURO -> 0xFF14A38B.toInt()
-    CLASSE_BARRA -> 0xFFC2477F.toInt()
+    CLASSE_COMEDOURO -> 0xFFA855F7.toInt() // violeta: nada na cena tem essa cor
+    CLASSE_BARRA -> 0xFF84CC16.toInt() // verde-limão
     else -> 0xFFFF4D6D.toInt()
 }
 
@@ -661,7 +662,11 @@ private fun CaixasDasAves(aves: List<AveDetectada>, mostrarNomes: Boolean, modif
                 val altura = (ave.y2 - ave.y1) * size.height
                 val cor = corDaClasse(ave.classe)
                 if (ehEstrutura(ave.classe)) {
-                    drawRect(Color(cor), Offset(x, y), Size(largura, altura), style = Stroke(1.dp.toPx()))
+                    // Estruturas em traço tracejado e violeta/verde; aves em traço contínuo laranja/azul.
+                    drawRect(
+                        Color(cor), Offset(x, y), Size(largura, altura),
+                        style = Stroke(1.5.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(6.dp.toPx(), 4.dp.toPx())))
+                    )
                 } else {
                     drawRect(Color(cor), Offset(x, y), Size(largura, altura), style = Stroke(traco))
                     // Rótulo com o nome da classe (pinto / galinha), como no painel do GranjaCam.
