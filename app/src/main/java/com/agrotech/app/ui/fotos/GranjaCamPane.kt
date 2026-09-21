@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -147,6 +148,11 @@ private const val PROPORCAO_VIDEO_H = 1024f
 private const val PROPORCAO_VIDEO = PROPORCAO_VIDEO_W / PROPORCAO_VIDEO_H
 private const val ZOOM_MAXIMO = 4f
 
+// Janela paisagem da tela normal: mesma região e escala do print aprovado (recorte 768x410 do vídeo
+// 768x1024, começando na linha 120, onde ficam os pintos). Para ver o resto: modo paisagem em tela cheia.
+private const val PROPORCAO_JANELA = 768f / 410f
+private const val JANELA_INICIO_Y = 120f
+
 // Filtro de visão: cada tipo de item é um bit. Guardado como Int para sobreviver à rotação da tela.
 private const val BIT_PINTO = 1
 private const val BIT_GALINHA = 2
@@ -216,23 +222,38 @@ private fun GranjaCamMock(modifier: Modifier) {
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Box(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(PROPORCAO_VIDEO)
+                .aspectRatio(PROPORCAO_JANELA)
                 .clip(RoundedCornerShape(12.dp))
                 .background(Color(0xFF1A1F1C))
         ) {
-            if (!cheia) {
-                VideoComDeteccoes(
-                    modifier = Modifier.fillMaxSize(),
-                    deteccoes = deteccoes,
-                    posicaoInicialMs = ultimaPosicao[0],
-                    filtro = filtro
-                ) { quadro, total, ms ->
-                    aves = quadro
-                    rastreadas = total
-                    ultimaPosicao[0] = ms
+            val larguraPx = constraints.maxWidth.toFloat()
+            val alturaVideoPx = larguraPx / PROPORCAO_VIDEO
+            val deslocY = -(JANELA_INICIO_Y / PROPORCAO_VIDEO_H) * alturaVideoPx
+            val densidade = LocalDensity.current
+            // O vídeo inteiro (retrato) é maior que a janela: requiredSize deixa ele passar da janela
+            // e o deslocamento mostra só o recorte do print.
+            Box(
+                modifier = Modifier
+                    .requiredSize(
+                        width = with(densidade) { larguraPx.toDp() },
+                        height = with(densidade) { alturaVideoPx.toDp() }
+                    )
+                    .graphicsLayer { translationY = deslocY }
+            ) {
+                if (!cheia) {
+                    VideoComDeteccoes(
+                        modifier = Modifier.fillMaxSize(),
+                        deteccoes = deteccoes,
+                        posicaoInicialMs = ultimaPosicao[0],
+                        filtro = filtro
+                    ) { quadro, total, ms ->
+                        aves = quadro
+                        rastreadas = total
+                        ultimaPosicao[0] = ms
+                    }
                 }
             }
             EtiquetaAoVivo(Modifier.align(Alignment.TopStart).padding(10.dp))
@@ -474,8 +495,10 @@ private fun ModoPaisagem(
                 val densidade = LocalDensity.current
                 Box(
                     modifier = Modifier
-                        .width(with(densidade) { larguraPx.toDp() })
-                        .height(with(densidade) { alturaConteudo.toDp() })
+                        .requiredSize(
+                            width = with(densidade) { larguraPx.toDp() },
+                            height = with(densidade) { alturaConteudo.toDp() }
+                        )
                         .graphicsLayer {
                             transformOrigin = TransformOrigin(0f, 0f)
                             scaleX = escala
