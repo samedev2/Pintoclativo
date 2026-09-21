@@ -9,6 +9,7 @@ import android.graphics.Paint
 import android.graphics.SurfaceTexture
 import android.graphics.Typeface
 import android.media.MediaPlayer
+import android.media.PlaybackParams
 import android.net.Uri
 import android.view.Surface
 import android.view.TextureView
@@ -232,13 +233,13 @@ private fun GranjaCamMock(modifier: Modifier) {
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(PROPORCAO_JANELA)
+                .aspectRatio(PROPORCAO_VIDEO)
                 .clip(RoundedCornerShape(12.dp))
                 .background(Color(0xFF1A1F1C))
         ) {
             val larguraPx = constraints.maxWidth.toFloat()
             val alturaVideoPx = larguraPx / PROPORCAO_VIDEO
-            val deslocY = -(JANELA_INICIO_Y / PROPORCAO_VIDEO_H) * alturaVideoPx
+            val deslocY = 0f // quadro inteiro, sem recorte
             val densidade = LocalDensity.current
             // O vídeo inteiro (retrato) é maior que a janela: requiredSize deixa ele passar da janela
             // e o deslocamento mostra só o recorte do print.
@@ -382,6 +383,9 @@ private fun VideoComDeteccoes(
 /** Vídeos de teste em sequência (res/raw), na mesma ordem dos arquivos de detecção. */
 private val CLIPES = intArrayOf(R.raw.granjacam_pintos, R.raw.granjacam_pintos_2)
 
+/** Velocidade de cada clipe (1 = normal). O "espalhados" tinha movimento rápido demais: toca em câmera lenta. */
+private val VELOCIDADES = floatArrayOf(0.5f, 1f)
+
 /**
  * Player dos vídeos de teste em `TextureView` (e não `VideoView`): o TextureView aceita zoom, arrastar e
  * recorte, o que o modo paisagem precisa. Toca os [CLIPES] em sequência e volta ao primeiro no fim
@@ -416,6 +420,11 @@ private fun VideoTextura(
                                 clipeAtual[0] = indice
                                 mp.setOnPreparedListener { p ->
                                     if (aPartirDeMs > 0) p.seekTo(aPartirDeMs)
+                                    try {
+                                        p.playbackParams = PlaybackParams().setSpeed(VELOCIDADES[indice])
+                                    } catch (e: Exception) {
+                                        // aparelho sem suporte a velocidade: toca em velocidade normal
+                                    }
                                     p.start()
                                     avisar(p)
                                 }
