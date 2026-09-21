@@ -3,7 +3,8 @@ Gera app/src/main/assets/granjacam/deteccoes.json para o video de teste da cena 
 (pintos + galinhas + comedouros), usando o detector do GranjaCam (pinteiro.pt) com correcoes
 para essa camera:
 
-  1. comedouros: os baldes amarelos viram a classe "comedouro" (fora da contagem de aves);
+  1. comedouros: os baldes amarelos viram a classe "comedouro" e as linhas verticais da direita viram
+     "barra_separacao" (as duas fora da contagem de aves);
   2. filtro de falsos positivos: caixas sobre copos, contas vermelhas dos fios e objetos
      parados (comparando com o quadro de fundo: o quadro 0 do video e o cercado vazio);
   3. NMS entre classes e descarte de caixa pequena contida numa grande (cabeca/asa);
@@ -37,6 +38,10 @@ PESOS_PADRAO = GRANJACAM_PADRAO / "modelos" / "historico" / "pinteiro_20260917-1
 LIMIAR_EXTRAS = 26
 ABERTURA_EXTRAS = 13
 ID_COMEDOURO_BASE = 1000  # ids >= 1000 sao comedouros (fixos); aves usam 1..999
+ID_BARRA_BASE = 2000      # ids >= 2000 sao barras de separacao (fixas)
+# Barras de separacao (linhas verticais da direita do cercado): caixa (x1, y1, x2, y2) em px no video 768x1024.
+# Definidas a olho no quadro do cercado vazio (haste cinza, linha vermelha, fio escuro, linha vermelha da direita).
+BARRAS_SEPARACAO = [(490, 110, 552, 935), (462, 5, 530, 980), (548, 0, 635, 950), (588, 5, 698, 960)]
 
 
 # ---------------------------------------------------------------- mascaras de cor ----
@@ -280,6 +285,9 @@ def main() -> None:
         for k, b in enumerate(quadros_comedouros[i]):
             linha.append([ID_COMEDOURO_BASE + k, "comedouro", 1.0, round(b[0] / W, 4), round(b[1] / H, 4),
                           round(b[2] / W, 4), round(b[3] / H, 4)])
+        for k, (bx1, by1, bx2, by2) in enumerate(BARRAS_SEPARACAO):
+            linha.append([ID_BARRA_BASE + k, "barra_separacao", 1.0, round(bx1 / W, 4), round(by1 / H, 4),
+                          round(bx2 / W, 4), round(by2 / H, 4)])
         saida.append({"t": round(t, 3), "d": linha})
 
     args.saida.parent.mkdir(parents=True, exist_ok=True)
@@ -293,7 +301,7 @@ def main() -> None:
         "ids_de_aves": len(todos_ids),
         "ids_por_classe": dict(Counter(classe_id.values())),
         "media_por_quadro": {c: round(sum(p[c] for p in por_classe) / len(por_classe), 1)
-                             for c in ("pinto", "galinha", "comedouro")},
+                             for c in ("pinto", "galinha", "comedouro", "barra_separacao")},
     }, indent=2, ensure_ascii=False))
 
 

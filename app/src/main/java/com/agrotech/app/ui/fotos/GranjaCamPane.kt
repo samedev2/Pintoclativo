@@ -12,6 +12,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -53,7 +55,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.agrotech.app.R
 import com.agrotech.app.data.granjacam.AveDetectada
+import com.agrotech.app.data.granjacam.CLASSE_BARRA
 import com.agrotech.app.data.granjacam.CLASSE_COMEDOURO
+import com.agrotech.app.data.granjacam.ehEstrutura
 import com.agrotech.app.data.granjacam.DeteccoesMock
 import com.agrotech.app.data.granjacam.GranjaCamConfig
 import com.agrotech.app.ui.components.CartaoNovo
@@ -126,7 +130,7 @@ private fun GranjaCamMock(modifier: Modifier) {
             if (ms < ultimoMs - 1000) vistos.clear() // o vídeo reiniciou (loop)
             ultimoMs = ms
             val quadro = det.quadroEm(ms.toLong())
-            quadro.forEach { if (it.classe != CLASSE_COMEDOURO) vistos.add("${it.classe}${it.id}") }
+            quadro.forEach { if (!ehEstrutura(it.classe)) vistos.add("${it.classe}${it.id}") }
             aves = quadro
             rastreadas = vistos.size
             delay(33)
@@ -200,17 +204,19 @@ private fun GranjaCamMock(modifier: Modifier) {
     }
 }
 
-/** Legenda das cores das caixas: pinto, galinha e comedouro. */
+/** Legenda das cores das caixas: pinto, galinha, comedouro e barra de separação. */
 @Composable
 private fun Legenda() {
-    Row(
+    @OptIn(ExperimentalLayoutApi::class)
+    FlowRow(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         ItemLegenda("Pinto", corDaClasse("pinto"))
         ItemLegenda("Galinha", corDaClasse("galinha"))
         ItemLegenda("Comedouro", corDaClasse(CLASSE_COMEDOURO))
+        ItemLegenda("Barra de separação", corDaClasse(CLASSE_BARRA))
     }
 }
 
@@ -246,9 +252,10 @@ private fun EtiquetaAoVivo(modifier: Modifier) {
 }
 
 private fun corDaClasse(classe: String): Int = when (classe) {
-    "pinto" -> 0xFFFFD23F.toInt()
-    "galinha" -> 0xFFFF7A45.toInt()
-    CLASSE_COMEDOURO -> 0xFF14B8A6.toInt()
+    "pinto" -> 0xFFD08A1D.toInt()
+    "galinha" -> 0xFF2F7FD1.toInt()
+    CLASSE_COMEDOURO -> 0xFF14A38B.toInt()
+    CLASSE_BARRA -> 0xFFC2477F.toInt()
     else -> 0xFFFF4D6D.toInt()
 }
 
@@ -258,7 +265,7 @@ private fun CaixasDasAves(aves: List<AveDetectada>, modifier: Modifier) {
     val texto = remember { Paint().apply { isAntiAlias = true; typeface = Typeface.DEFAULT_BOLD } }
     val fundo = remember { Paint() }
     // Comedouros primeiro, para as aves ficarem por cima.
-    val ordenadas = remember(aves) { aves.sortedByDescending { it.classe == CLASSE_COMEDOURO } }
+    val ordenadas = remember(aves) { aves.sortedByDescending { ehEstrutura(it.classe) } }
     Canvas(modifier) {
         val traco = 1.5.dp.toPx()
         drawIntoCanvas { canvas ->
@@ -276,14 +283,12 @@ private fun CaixasDasAves(aves: List<AveDetectada>, modifier: Modifier) {
                 val largura = (ave.x2 - ave.x1) * size.width
                 val altura = (ave.y2 - ave.y1) * size.height
                 val cor = corDaClasse(ave.classe)
-                if (ave.classe == CLASSE_COMEDOURO) {
+                if (ehEstrutura(ave.classe)) {
                     drawRect(Color(cor), Offset(x, y), Size(largura, altura), style = Stroke(1.dp.toPx()))
                 } else {
                     drawRect(Color(cor), Offset(x, y), Size(largura, altura), style = Stroke(traco))
-                    // Só rotula pinto quando a caixa é grande o bastante para caber o número.
-                    if (ave.classe != "pinto" || largura > 16.dp.toPx()) {
-                        etiqueta("#${ave.id}", x, y, cor, 0xFF1A1A1A.toInt(), 9f, 12.dp.toPx())
-                    }
+                    // Rótulo com o nome da classe (pinto / galinha), como no painel do GranjaCam.
+                    etiqueta(ave.classe, x, y, cor, 0xFFFFFFFF.toInt(), 8f, 11.dp.toPx())
                 }
             }
         }

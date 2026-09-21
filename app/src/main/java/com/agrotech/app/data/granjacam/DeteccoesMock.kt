@@ -3,8 +3,13 @@ package com.agrotech.app.data.granjacam
 import android.content.Context
 import org.json.JSONObject
 
-/** Classe dos baldes amarelos: comedouros fixos, que aparecem nas detecções mas não são aves. */
 const val CLASSE_COMEDOURO = "comedouro"
+
+/** Linhas verticais de separação do cercado (haste, fios e linhas de contas vermelhas): também não são aves. */
+const val CLASSE_BARRA = "barra_separacao"
+
+/** Comedouros e barras são estruturas fixas: aparecem nas detecções mas não entram na contagem de aves. */
+fun ehEstrutura(classe: String): Boolean = classe == CLASSE_COMEDOURO || classe == CLASSE_BARRA
 
 /** Uma detecção num quadro (ave ou comedouro). Caixa normalizada (0 a 1) em relação ao tamanho do vídeo. */
 data class AveDetectada(
