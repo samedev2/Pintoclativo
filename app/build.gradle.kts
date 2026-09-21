@@ -35,7 +35,12 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8 e limpeza de recursos: só descartam código e recursos que ninguém usa (o app não perde nada).
+            isMinifyEnabled = true
+            isShrinkResources = true
+            // Assinado com a chave de debug para instalar por cima do app já instalado nos aparelhos de teste.
+            // Antes de publicar na Play Store, trocar por uma chave de release própria.
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
