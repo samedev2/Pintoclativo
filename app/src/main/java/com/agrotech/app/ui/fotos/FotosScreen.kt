@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -48,11 +49,13 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
+import com.agrotech.app.R
 import com.agrotech.app.ui.components.CabecalhoVerde
 import com.agrotech.app.ui.components.CartaoNovo
 import com.agrotech.app.ui.theme.DeepGreen
@@ -128,8 +131,9 @@ private fun ItemSeletor(
 @Composable
 private fun FotoPane(modifier: Modifier) {
     val context = LocalContext.current
-    var foto by remember { mutableStateOf<Any?>(null) }
-    var total by rememberSaveable { mutableIntStateOf(0) }
+    // Começa com a foto de exemplo (pintos na granja), como no design, até o usuário tirar outra.
+    var foto by remember { mutableStateOf<Any?>(R.drawable.foto_granja_exemplo) }
+    var total by rememberSaveable { mutableIntStateOf(1) }
 
     val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap: Bitmap? ->
         if (bitmap != null) {
@@ -164,7 +168,7 @@ private fun FotoPane(modifier: Modifier) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(300.dp)
+                .aspectRatio(262f / 364f)
                 .clip(RoundedCornerShape(12.dp))
                 .background(FieldBg),
             contentAlignment = Alignment.Center
@@ -251,6 +255,12 @@ private fun Previa(foto: Any?, modifier: Modifier) {
             modifier = modifier
         )
         null -> Box(modifier)
+        is Int -> Image(
+            painter = painterResource(foto),
+            contentDescription = "Foto da granja",
+            contentScale = ContentScale.Crop,
+            modifier = modifier
+        )
         else -> AsyncImage(
             model = foto,
             contentDescription = "Foto da granja",

@@ -633,7 +633,7 @@ private fun BotaoFiltro(nome: String, cor: Int?, ativo: Boolean, escuro: Boolean
 @Composable
 private fun Contador(titulo: String, valor: Int, modifier: Modifier) {
     CartaoNovo(modifier = modifier) {
-        Text(titulo, fontSize = 11.sp, color = Muted)
+        Text(titulo, fontSize = 10.sp, color = Muted, maxLines = 1, softWrap = false)
         Text("$valor", fontSize = 20.sp, fontWeight = FontWeight.Bold)
     }
 }

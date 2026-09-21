@@ -1,5 +1,6 @@
 package com.agrotech.app.ui.inicio
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,12 +35,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.agrotech.app.R
 import com.agrotech.app.data.mock.MockData
 import com.agrotech.app.ui.components.CartaoNovo
 import com.agrotech.app.ui.components.QuadroIcone
@@ -191,33 +198,34 @@ private fun saudacao(): String {
     }
 }
 
-/** Banner de boas-vindas. Sem foto por enquanto: degradê quente no lugar da imagem. */
+/**
+ * Banner de boas-vindas: a foto do pinto do design (sem texto na imagem) com o texto e a barrinha verde
+ * desenhados pelo app, para ficarem nítidos em qualquer tela.
+ */
 @Composable
 private fun Banner() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(118.dp)
             .clip(RoundedCornerShape(14.dp))
-            .background(
-                Brush.horizontalGradient(
-                    listOf(Color(0xFF6B4F2E), Color(0xFF8A6A3F), Color(0xFFE7C98B), Color(0xFFF6E7C2))
-                )
-            )
     ) {
-        Column(
+        Image(
+            painter = painterResource(R.drawable.banner_pinto),
+            contentDescription = null,
+            contentScale = ContentScale.FillWidth,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Text(
+            "Avicultura\nde resultados\ntodos os dias.",
+            color = Color.White,
+            fontSize = 19.sp,
+            lineHeight = 23.sp,
+            fontWeight = FontWeight.SemiBold,
+            style = TextStyle(shadow = Shadow(color = Color.Black.copy(alpha = 0.35f), offset = Offset(0f, 2f), blurRadius = 6f)),
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(start = 16.dp, end = 120.dp)
-        ) {
-            Text(
-                "Avicultura de resultados todos os dias.",
-                color = Color.White,
-                fontSize = 19.sp,
-                lineHeight = 23.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
+                .padding(start = 16.dp)
+        )
         Box(
             modifier = Modifier
                 .align(Alignment.BottomStart)
@@ -242,7 +250,7 @@ private fun Indicador(
     CartaoNovo(aoClicar = aoClicar, modifier = modifier) {
         QuadroIcone(icone, fundoIcone, corIcone, tamanho = 36.dp)
         Spacer(Modifier.height(8.dp))
-        Text(titulo, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+        Text(titulo, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.Bottom,
