@@ -191,7 +191,8 @@ private fun GranjaCamMock(modifier: Modifier) {
     var telaCheia by rememberSaveable { mutableStateOf(false) }
     var filtro by rememberSaveable { mutableIntStateOf(FILTRO_PADRAO) }
     // Última posição do vídeo, para o modo paisagem continuar de onde parou (não precisa recompor a tela).
-    val ultimaPosicao = remember { IntArray(1) }
+    // [0] = clipe (vídeo) e [1] = posição em ms dentro do clipe.
+    val ultimaPosicao = remember { IntArray(2) }
 
     // Modo paisagem: força a orientação enquanto estiver aberto e devolve ao normal ao sair.
     val cheia = telaCheia
@@ -205,11 +206,13 @@ private fun GranjaCamMock(modifier: Modifier) {
     if (cheia) {
         ModoPaisagem(
             deteccoes = deteccoes,
-            posicaoInicialMs = ultimaPosicao[0],
+            clipeInicial = ultimaPosicao[0],
+            posicaoInicialMs = ultimaPosicao[1],
             filtro = filtro,
             aoAlternarFiltro = { filtro = filtro xor it },
-            aoFechar = { ms ->
-                ultimaPosicao[0] = ms
+            aoFechar = { clipe, ms ->
+                ultimaPosicao[0] = clipe
+                ultimaPosicao[1] = ms
                 telaCheia = false
             }
         )
@@ -247,12 +250,14 @@ private fun GranjaCamMock(modifier: Modifier) {
                     VideoComDeteccoes(
                         modifier = Modifier.fillMaxSize(),
                         deteccoes = deteccoes,
-                        posicaoInicialMs = ultimaPosicao[0],
+                        clipeInicial = ultimaPosicao[0],
+                        posicaoInicialMs = ultimaPosicao[1],
                         filtro = filtro
-                    ) { quadro, total, ms ->
+                    ) { quadro, total, clipe, ms ->
                         aves = quadro
                         rastreadas = total
-                        ultimaPosicao[0] = ms
+                        ultimaPosicao[0] = clipe
+                        ultimaPosicao[1] = ms
                     }
                 }
             }
@@ -327,11 +332,14 @@ private fun BotaoRedondo(
 private fun VideoComDeteccoes(
     modifier: Modifier,
     deteccoes: DeteccoesMock?,
+    clipeInicial: Int,
     posicaoInicialMs: Int,
     filtro: Int,
-    aoAtualizar: (List<AveDetectada>, Int, Int) -> Unit
+    aoAtualizar: (List<AveDetectada>, Int, Int, Int) -> Unit
 ) {
     var player by remember { mutableStateOf<MediaPlayer?>(null) }
+    // Clipe (vídeo) que está tocando; o VideoTextura atualiza ao passar para o próximo.
+    val clipe = remember { intArrayOf(clipeInicial) }
     var aves by remember { mutableStateOf<List<AveDetectada>>(emptyList()) }
     val atualizar by rememberUpdatedState(aoAtualizar)
 
@@ -341,36 +349,45 @@ private fun VideoComDeteccoes(
         val vistos = HashSet<String>()
         var ultimoMs = 0
         while (isActive) {
-            val ms = try {
+            val local = try {
                 p.currentPosition
             } catch (e: IllegalStateException) {
-                break // o player foi liberado
+                delay(33) // trocando de clipe ou player liberado
+                continue
             }
-            if (ms < ultimoMs - 1000) vistos.clear() // o vídeo reiniciou (loop)
+            // Posição na linha do tempo total: soma dos clipes anteriores + posição no clipe atual.
+            val ms = det.inicioDoClipeMs(clipe[0]) + local
+            if (ms < ultimoMs - 1000) vistos.clear() // a lista voltou ao começo (loop)
             ultimoMs = ms
             val quadro = det.quadroEm(ms.toLong())
             quadro.forEach { if (!ehEstrutura(it.classe)) vistos.add("${it.classe}${it.id}") }
             aves = quadro
-            atualizar(quadro, vistos.size, ms)
+            atualizar(quadro, vistos.size, clipe[0], local)
             delay(33)
         }
     }
 
     Box(modifier) {
-        VideoTextura(Modifier.fillMaxSize(), posicaoInicialMs) { player = it }
+        VideoTextura(Modifier.fillMaxSize(), clipe, posicaoInicialMs) { player = it }
         // O filtro só muda o que é desenhado; os contadores continuam contando tudo.
         val desenhar = remember(aves, filtro) { aves.filter { classeVisivel(filtro, it.classe) } }
         CaixasDasAves(desenhar, (filtro and BIT_NOMES) != 0, Modifier.fillMaxSize())
     }
 }
 
+/** Vídeos de teste em sequência (res/raw), na mesma ordem dos arquivos de detecção. */
+private val CLIPES = intArrayOf(R.raw.granjacam_pintos, R.raw.granjacam_pintos_2)
+
 /**
- * Player do vídeo de teste em `TextureView` (e não `VideoView`): o TextureView aceita zoom, arrastar e
- * recorte, o que o modo paisagem precisa. [aoPronto] recebe o player já preparado (ou null ao liberar).
+ * Player dos vídeos de teste em `TextureView` (e não `VideoView`): o TextureView aceita zoom, arrastar e
+ * recorte, o que o modo paisagem precisa. Toca os [CLIPES] em sequência e volta ao primeiro no fim
+ * (lista em loop); [clipeAtual] guarda qual está tocando. [aoPronto] recebe o player já preparado
+ * (ou null ao liberar).
  */
 @Composable
 private fun VideoTextura(
     modifier: Modifier,
+    clipeAtual: IntArray,
     posicaoInicialMs: Int,
     aoPronto: (MediaPlayer?) -> Unit
 ) {
@@ -383,21 +400,30 @@ private fun VideoTextura(
                 surfaceTextureListener = object : TextureView.SurfaceTextureListener {
                     override fun onSurfaceTextureAvailable(st: SurfaceTexture, width: Int, height: Int) {
                         val mp = MediaPlayer()
-                        try {
-                            mp.setDataSource(ctx, Uri.parse("android.resource://${ctx.packageName}/${R.raw.granjacam_pintos}"))
-                            mp.setSurface(Surface(st))
-                            mp.isLooping = true
-                            mp.setVolume(0f, 0f)
-                            mp.setOnPreparedListener { p ->
-                                if (posicaoInicialMs > 0) p.seekTo(posicaoInicialMs)
-                                p.start()
-                                avisar(p)
+                        val superficie = Surface(st)
+
+                        fun tocar(indice: Int, aPartirDeMs: Int) {
+                            try {
+                                mp.reset()
+                                mp.setSurface(superficie)
+                                mp.setDataSource(ctx, Uri.parse("android.resource://${ctx.packageName}/${CLIPES[indice]}"))
+                                mp.isLooping = false
+                                mp.setVolume(0f, 0f)
+                                clipeAtual[0] = indice
+                                mp.setOnPreparedListener { p ->
+                                    if (aPartirDeMs > 0) p.seekTo(aPartirDeMs)
+                                    p.start()
+                                    avisar(p)
+                                }
+                                mp.setOnCompletionListener { tocar((indice + 1) % CLIPES.size, 0) }
+                                mp.prepareAsync()
+                            } catch (e: Exception) {
+                                mp.release()
                             }
-                            mp.prepareAsync()
-                            playerAtual[0] = mp
-                        } catch (e: Exception) {
-                            mp.release()
                         }
+
+                        playerAtual[0] = mp
+                        tocar(clipeAtual[0].coerceIn(0, CLIPES.lastIndex), posicaoInicialMs)
                     }
 
                     override fun onSurfaceTextureSizeChanged(st: SurfaceTexture, width: Int, height: Int) = Unit
@@ -427,17 +453,18 @@ private fun VideoTextura(
 @Composable
 private fun ModoPaisagem(
     deteccoes: DeteccoesMock?,
+    clipeInicial: Int,
     posicaoInicialMs: Int,
     filtro: Int,
     aoAlternarFiltro: (Int) -> Unit,
-    aoFechar: (Int) -> Unit
+    aoFechar: (Int, Int) -> Unit
 ) {
     var aves by remember { mutableStateOf<List<AveDetectada>>(emptyList()) }
     var rastreadas by remember { mutableIntStateOf(0) }
-    val posicao = remember { intArrayOf(posicaoInicialMs) }
+    val posicao = remember { intArrayOf(clipeInicial, posicaoInicialMs) }
 
     Dialog(
-        onDismissRequest = { aoFechar(posicao[0]) },
+        onDismissRequest = { aoFechar(posicao[0], posicao[1]) },
         properties = DialogProperties(
             usePlatformDefaultWidth = false,
             decorFitsSystemWindows = false,
@@ -510,12 +537,14 @@ private fun ModoPaisagem(
                     VideoComDeteccoes(
                         modifier = Modifier.fillMaxSize(),
                         deteccoes = deteccoes,
+                        clipeInicial = clipeInicial,
                         posicaoInicialMs = posicaoInicialMs,
                         filtro = filtro
-                    ) { quadro, total, ms ->
+                    ) { quadro, total, clipe, ms ->
                         aves = quadro
                         rastreadas = total
-                        posicao[0] = ms
+                        posicao[0] = clipe
+                        posicao[1] = ms
                     }
                 }
             }
@@ -526,7 +555,7 @@ private fun ModoPaisagem(
                 descricao = "Sair do modo paisagem",
                 modifier = Modifier.align(Alignment.TopEnd).padding(12.dp),
                 tamanho = 44.dp,
-                aoClicar = { aoFechar(posicao[0]) }
+                aoClicar = { aoFechar(posicao[0], posicao[1]) }
             )
             Row(
                 modifier = Modifier.align(Alignment.BottomStart).padding(12.dp),
