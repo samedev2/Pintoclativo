@@ -82,8 +82,10 @@ def _iou(a, b):
 
 def refinar(frame, fundo, caixas, confs, frac_copo=0.35, frac_fg=0.30, iou_nms=0.5, contido=0.7):
     """Filtra falsos positivos. Devolve [(caixa_px, conf)] ainda sem classe."""
-    copos = mascara_copos(frame)
-    copos_grossos = cv2.dilate(copos, np.ones((9, 9), np.uint8))
+    # Baldes: posicao FIXA, tirada do cercado vazio. A cor de cada quadro nao serve, porque pintos amarelos
+    # amontoados se parecem com os baldes e teriam as caixas descartadas. A folga cobre a oscilacao da camera.
+    copos = mascara_copos(fundo)
+    copos_grossos = cv2.dilate(copos, np.ones((15, 15), np.uint8))
     vermelho = mascara_vermelho(frame)
     fg = primeiro_plano(frame, fundo)
     h, w = copos.shape

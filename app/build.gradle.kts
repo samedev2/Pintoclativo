@@ -21,6 +21,11 @@ android {
             useSupportLibrary = true
         }
 
+        // Só ARM (celulares). x86 e x86_64 são de emulador de PC e somavam ~35 MB de bibliotecas do ML Kit.
+        ndk {
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+        }
+
         // URL do serviço GranjaCam (análise computacional em outro ambiente).
         // Vazia = a opção GranjaCam usa o mock local. Preenchida (https://...)
         // = abre o webviewer do serviço. Ex.: ./gradlew assembleDebug -PgranjacamUrl=https://cam.exemplo.com
