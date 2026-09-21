@@ -97,7 +97,11 @@ private fun GranjaCamWebView(url: String, modifier: Modifier) {
     )
 }
 
-private const val PROPORCAO_VIDEO = 1344f / 768f
+// Resolução do vídeo de teste em res/raw/granjacam_pintos.mp4.
+// Atualizar junto com o vídeo: 768x1024 (retrato, 3:4).
+private const val PROPORCAO_VIDEO_W = 768f
+private const val PROPORCAO_VIDEO_H = 1024f
+private const val PROPORCAO_VIDEO = PROPORCAO_VIDEO_W / PROPORCAO_VIDEO_H
 
 @Composable
 private fun GranjaCamMock(modifier: Modifier) {

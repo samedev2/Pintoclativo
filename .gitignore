@@ -11,3 +11,8 @@
 local.properties
 app/build/
 app/release/
+
+# ferramentas locais pesadas (>100 MB, o GitHub recusa)
+/tools/ffmpeg.zip
+/tools/ffmpeg-*/
+/tools/*.original.mp4

@@ -10,7 +10,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.agrotech.app"
+        applicationId = "com.agrotech.app.pinteiro"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
