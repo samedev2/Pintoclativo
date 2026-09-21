@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgroTech Granja — novo design</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --deep:#26604A; --deep-dark:#1c4a39; --ink:#12201a; --muted:#6b7772; --hair:#e4e9e6; --field:#f3f5f4; --paper:#fff;
+    --amber:#c9820a; --amber-bg:#fdf1dc; --green-bg:#e6f0eb; --red:#d62f2f; --red-bg:#fde8e8;
+    --cam:#0F6E56; --cam-bg:#E1F5EE; --page:#e9ebe9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;background:var(--page);color:var(--ink);font-size:14px;padding:24px 24px 48px}
+  header.top{max-width:1300px;margin:0 auto 20px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between}
+  header.top h1{font-size:20px;font-weight:600}
+  header.top p{color:var(--muted);font-size:13px;margin-top:2px}
+  .toggle{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--hair);border-radius:999px;padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;user-select:none}
+  .toggle input{accent-color:var(--cam);width:16px;height:16px}
+  .grid{max-width:1400px;margin:0 auto;display:flex;flex-wrap:wrap;gap:36px 28px;justify-content:center}
+  figure{display:flex;flex-direction:column;align-items:center;gap:10px}
+  figcaption{font-size:13px;font-weight:600;text-align:center}
+  figcaption small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:1px}
+  .phone{width:380px;height:812px;background:#fff;border-radius:46px;border:9px solid #17191a;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+  .island{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:104px;height:28px;background:#000;border-radius:20px;z-index:5}
+  .status{height:46px;flex:none;display:flex;justify-content:space-between;align-items:flex-end;padding:0 30px 6px;font-size:13px;font-weight:600}
+  .status.g{background:var(--deep);color:#fff}
+  .body{flex:1;overflow-y:auto;min-height:0}
+  .body::-webkit-scrollbar{width:0}
+  .content{padding:8px 16px 16px;display:flex;flex-direction:column;gap:12px}
+  .top-home{display:flex;align-items:center;gap:10px;padding:8px 18px 4px}
+  .top-home svg.lg{width:30px;height:30px;fill:var(--deep)}
+  .top-home h1{font-size:22px;font-weight:600;flex:1}
+  .avatar{width:38px;height:38px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center}
+  .avatar svg{width:20px;height:20px;fill:var(--deep)}
+  .hello h2{font-size:20px;font-weight:700}.hello p{font-size:14px;color:var(--muted);margin-top:2px}
+  .hero{height:118px;border-radius:14px;position:relative;overflow:hidden;background:linear-gradient(100deg,#6b4f2e 0%,#8a6a3f 35%,#e7c98b 70%,#f6e7c2 100%);color:#fff;display:flex;align-items:center;padding:0 16px}
+  .hero b{font-size:19px;line-height:1.2;font-weight:600;max-width:150px;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+  .hero .chick{position:absolute;right:14px;bottom:0;width:104px;height:92px;border-radius:50% 50% 0 0;background:#fbf3d8}
+  .hero .chick::after{content:"";position:absolute;left:14px;top:38px;width:20px;height:9px;background:#e58a2f;border-radius:50%}
+  .hero .bar{position:absolute;left:16px;bottom:10px;width:26px;height:3px;background:#5bd88a;border-radius:2px}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .card{background:var(--paper);border:1px solid var(--hair);border-radius:14px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .stat .ic{width:32px;height:32px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;border-radius:8px}
+  .stat .ic svg{width:26px;height:26px;fill:var(--deep)}
+  .stat .ic.w{background:var(--amber-bg)}.stat .ic.w svg{fill:var(--amber)}
+  .stat .ic.g{background:var(--green-bg)}
+  .stat b.t{font-size:14px;font-weight:600;display:block}
+  .stat .v{display:flex;align-items:flex-end;justify-content:space-between;margin-top:2px}
+  .stat .v strong{font-size:26px;font-weight:700;line-height:1.1}
+  .stat .v span.ch{font-size:20px;color:var(--ink)}
+  .stat small{font-size:12px;color:var(--muted)}
+  .row{display:flex;align-items:center;gap:12px;padding:12px 14px}
+  .row .ic{width:40px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:var(--field);flex:none}
+  .row .ic svg{width:22px;height:22px;fill:var(--deep)}
+  .row b{font-size:14px;font-weight:600;display:block}.row span.s{font-size:12px;color:var(--muted)}
+  .row .ch{margin-left:auto;font-size:20px}
+  /* bottom nav */
+  .nav{flex:none;height:84px;border-top:1px solid var(--hair);background:#fff;display:flex;padding:8px 4px 0}
+  .nav .it{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--muted);position:relative}
+  .nav .it svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .nav .it.on{color:var(--deep);font-weight:600}
+  .nav .it.on::after{content:"";position:absolute;bottom:-4px;width:24px;height:3px;border-radius:2px;background:var(--deep)}
+  .nav .it svg.f{fill:currentColor;stroke:none}
+  /* green header screens */
+  .gh{background:var(--deep);color:#fff;display:flex;align-items:center;gap:14px;padding:6px 18px 16px;flex:none}
+  .gh h2{font-size:20px;font-weight:600}.gh .arrow{font-size:24px;line-height:1}
+  .form{padding:6px 18px 16px;display:flex;flex-direction:column;gap:2px}
+  .fl{font-size:14px;font-weight:600;margin:12px 0 8px}
+  .frow{display:flex;gap:10px;align-items:stretch}
+  .frow .i{width:48px;flex:none;border:1px solid var(--hair);border-radius:10px;display:flex;align-items:center;justify-content:center;background:#fff}
+  .frow .i svg{width:22px;height:22px;fill:var(--deep)}
+  .frow .i.plus{font-size:26px;color:var(--deep);font-weight:300}
+  .frow .f{flex:1;background:var(--field);border:1px solid var(--hair);border-radius:10px;padding:13px 14px;display:flex;justify-content:space-between;align-items:center;font-size:15px}
+  .frow .f em{font-style:normal;color:var(--muted);font-size:14px}
+  .frow .f.ta{align-items:flex-start;min-height:78px}
+  hr{border:0;border-top:1px solid var(--hair);margin:14px 0 0}
+  .count{text-align:right;font-size:12px;color:var(--muted);margin-top:6px}
+  .save{margin-top:18px;background:var(--deep);color:#fff;border-radius:10px;padding:17px;text-align:center;font-weight:600;font-size:16px;display:flex;justify-content:center;gap:10px;align-items:center}
+  .save svg{width:20px;height:20px;fill:#fff}
+  /* photos */
+  .photo{border-radius:12px;height:340px;position:relative;overflow:hidden;background:linear-gradient(180deg,#b9a98d 0%,#c9b48f 22%,#8d7f66 55%,#a8916b 100%)}
+  .photo::before{content:"";position:absolute;left:0;right:0;top:0;height:30%;background:repeating-linear-gradient(90deg,#d9d2c0 0 46px,#a9a08a 46px 50px)}
+  .photo .dots{position:absolute;inset:34% 0 0 0;background:radial-gradient(ellipse 22px 16px at 20% 30%,#f6efd8 98%,transparent),radial-gradient(ellipse 26px 18px at 45% 48%,#f6efd8 98%,transparent),radial-gradient(ellipse 30px 20px at 70% 30%,#f6efd8 98%,transparent),radial-gradient(ellipse 34px 24px at 30% 75%,#f6efd8 98%,transparent),radial-gradient(ellipse 40px 28px at 62% 82%,#f6efd8 98%,transparent),radial-gradient(ellipse 22px 15px at 85% 60%,#f6efd8 98%,transparent);opacity:.95}
+  .photo .feeder{position:absolute;left:52%;top:42%;width:34px;height:26px;background:#c62b2b;border-radius:10px 10px 4px 4px}
+  .btns{display:flex;gap:10px}
+  .btns div{flex:1;border-radius:10px;padding:15px;text-align:center;font-weight:600;font-size:15px}
+  .btns .p{background:var(--deep);color:#fff}.btns .s{background:var(--field);color:var(--ink);border:1px solid var(--hair)}
+  .done{display:flex;align-items:center;gap:12px;padding:10px 12px}
+  .done .th{width:64px;height:52px;border-radius:8px;background:linear-gradient(180deg,#b9a98d,#8d7f66)}
+  .done .ok{width:38px;height:38px;border-radius:50%;background:var(--deep);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+  .done b{font-size:14px}.done a{display:block;font-size:13px;color:var(--deep);font-weight:600;margin-top:2px}
+  /* camera concept */
+  .cam{display:none}
+  body.showcam .cam{display:block}
+  body.showcam .cam.row{display:flex}
+  body.showcam .cam.seg{display:flex}
+  .camfig{display:none}
+  body.showcam .camfig{display:flex}
+  .mark{border:2px dashed var(--cam)!important;background:var(--cam-bg)!important}
+  .mark *{color:var(--cam)!important}
+  .mark .ic{background:#fff!important}.mark .ic svg{fill:var(--cam)!important}
+  .seg{background:var(--field);border-radius:10px;padding:4px;gap:4px}
+  .seg div{flex:1;text-align:center;padding:9px;border-radius:8px;font-size:14px;font-weight:600;color:var(--muted)}
+  .seg div.on{background:#fff;color:var(--deep);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+  .video{background:#1a1f1c;border-radius:12px;aspect-ratio:16/10;position:relative;overflow:hidden;color:#cfd8d3}
+  .video .live{position:absolute;top:10px;left:10px;background:var(--red);color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:3px 10px}
+  .video .g{position:absolute;inset:0;background:radial-gradient(circle at 25% 60%,#e6c45a 0 5px,transparent 6px),radial-gradient(circle at 40% 45%,#e6c45a 0 5px,transparent 6px),radial-gradient(circle at 55% 65%,#e6c45a 0 5px,transparent 6px),radial-gradient(circle at 70% 50%,#e6c45a 0 5px,transparent 6px),radial-gradient(circle at 33% 75%,#e6c45a 0 5px,transparent 6px),radial-gradient(circle at 62% 35%,#e6c45a 0 5px,transparent 6px);opacity:.85}
+  .video .c{position:absolute;bottom:8px;left:12px;font-size:11px;opacity:.85}
+  .alert{display:flex;gap:10px;background:var(--red-bg);border-radius:12px;padding:12px 14px}
+  .alert b{color:#991b1b;font-size:13px;display:block}.alert span{font-size:12px;color:#7f1d1d}
+  .kp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .kp .card{padding:10px 12px}.kp small{font-size:11px;color:var(--muted);display:block}.kp b{font-size:20px}
+  .sti{display:flex;gap:5px;align-items:center}.sti svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .btns svg{width:20px;height:20px;vertical-align:-4px;margin-right:8px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .done .ok svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+  .live::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#fff;margin-right:6px;vertical-align:1px}
+  .alert svg.aw{width:22px;height:22px;flex:none;fill:#c62828}
+  .seg{display:flex}
+  .seg div{cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+  .seg svg.sg{width:18px;height:18px;fill:currentColor}
+  .seg div:nth-child(2) svg.sg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .video{aspect-ratio:1344/768}
+  .video video,.video canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .video video{object-fit:cover}
+  .foot{max-width:1300px;margin:28px auto 0;color:var(--muted);font-size:12px;text-align:center;line-height:1.6}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div>
+    <h1>AgroTech Granja — novo design</h1>
+    <p>Reprodução em HTML das telas enviadas por você. Em Fotos, a primeira opção é a câmera do GranjaCam (vídeo de teste com as detecções reais do modelo).</p>
+  </div>
+</header>
+
+<main class="grid" id="grid"></main>
+
+<p class="foot">Fotos e o brasão da granja são substituídos por formas simples. Os números são os exemplos do mockup, não dados do app.</p>
+
+<script src="media/deteccoes.js"></script>
+<script>
+const S=(p,c='')=>`<svg class="${c}" viewBox="0 0 24 24">${p}</svg>`;
+const I={
+  sprout:'<path d="M12 22c0-5 0-8 0-10C8 12 4 9 3 3c6 0 9 3 9 7 0-4 3-8 9-8-1 6-5 9-9 10v10z"/>',
+  user:'<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/>',
+  hen:'<path d="M18 9a4 4 0 0 0-4-4c-1.5 0-3 1-3.5 2.5C7 8 5 11 5 14a6 6 0 0 0 6 6h4c3 0 5-2 5-5v-3l-2 1V9zM7 21h2v-2H7z"/>',
+  warn:'<path d="M12 2 1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z"/>',
+  bag:'<path d="M9 2h6l1 3h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2l1-3zm3 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/>',
+  scale:'<path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm7 3a5 5 0 0 0-4.6 3h9.2A5 5 0 0 0 12 6zm0 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>',
+  chart:'<path d="M4 20h4V10H4v10zm6 0h4V4h-4v16zm6 0h4v-7h-4v7z"/>',
+  home:'<path d="M3 11 12 3l9 8M5 10v10h5v-6h4v6h5V10"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4M12 20h9"/>',
+  camI:'<path d="M4 8h3l2-3h6l2 3h3v11H4V8zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>',
+  bars:'<path d="M5 20V12M10 20V6M15 20v-9M20 20V4"/>',
+  more:'<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',
+  house:'<path d="M12 3 3 11h2v9h5v-6h4v6h5v-9h2L12 3z"/>',
+  file:'<path d="M6 2h9l5 5v15H6V2zm8 1.5V8h4.5M9 12h8M9 16h8" />',
+  save:'<path d="M5 3h11l4 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm2 0v5h8V3M8 21v-7h8v7"/>',
+  cam:'<path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/>',
+  img:'<path d="M4 5h16v14H4V5zM4 16l5-5 4 4 3-3 4 4M9 9.5h.01"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  sig:'<path d="M3 20h2v-4H3v4zm4 0h2v-7H7v7zm4 0h2V9h-2v11zm4 0h2V5h-2v15z" fill="currentColor" stroke="none"/>',
+  wifi:'<path d="M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01"/>',
+  batt:'<rect x="2" y="7" width="17" height="10" rx="3"/><path d="M21 10.5v3" /><rect x="4" y="9" width="11" height="6" rx="1.5" fill="currentColor" stroke="none"/>'
+};
+const stIcons=()=>`<span class="sti">${S(I.sig)}${S(I.wifi)}${S(I.batt)}</span>`;
+const nav=on=>`<div class="nav">${[['inicio','Início','home','o'],['lancar','Lançar','edit','o'],['fotos','Fotos','camI','o'],['rel','Relatórios','bars','o'],['mais','Mais','more','f']].map(([k,l,i,t])=>`<div class="it ${on===k?'on':''}">${S(I[i],t==='f'?'f':'')}${l}</div>`).join('')}</div>`;
+const phone=(inner,on,green)=>`<div class="phone"><div class="island"></div><div class="status ${green?'g':''}"><span>9:41</span>${stIcons()}</div>${inner}${on?nav(on):''}</div>`;
+const gh=t=>`<div class="gh"><span class="arrow">←</span><h2>${t}</h2></div>`;
+const fig=(t,s,h,c='')=>`<figure class="${c}">${h}<figcaption>${t}<small>${s}</small></figcaption></figure>`;
+const G=[];
+
+G.push(fig('Início','Tela inicial nova',phone(`<div class="body"><div class="top-home">${S(I.sprout,'lg')}<h1>AgroTech Granja</h1><div class="avatar">${S(I.user)}</div></div>
+<div class="content">
+  <div class="hello" style="padding:6px 2px 0"><h2>Bom dia!</h2><p>Juntos por uma granja mais produtiva.</p></div>
+  <div class="hero"><b>Avicultura de resultados todos os dias.</b><div class="chick"></div><div class="bar"></div></div>
+  <div class="stats">
+    <div class="card stat"><div class="ic g">${S(I.hen)}</div><b class="t">Lotes ativos</b><div class="v"><strong>4</strong><span class="ch">›</span></div><small>de 6 aviários</small></div>
+    <div class="card stat"><div class="ic w">${S(I.warn)}</div><b class="t">Mortalidade</b><div class="v"><strong>0,8%</strong><span class="ch">›</span></div><small>últimos 7 dias</small></div>
+    <div class="card stat"><div class="ic">${S(I.bag)}</div><b class="t">Ração consumida</b><div class="v"><strong>1.250 kg</strong><span class="ch">›</span></div><small>hoje</small></div>
+    <div class="card stat"><div class="ic">${S(I.scale)}</div><b class="t">Peso médio</b><div class="v"><strong>1,82 kg</strong><span class="ch">›</span></div><small>lote atual</small></div>
+  </div>
+  <div class="card row"><div class="ic">${S(I.chart)}</div><div><b>Desempenho do lote</b><span class="s">Acompanhe a evolução em tempo real</span></div><span class="ch">›</span></div>
+</div></div>`,'inicio')));
+
+G.push(fig('Lançar','Novo lançamento (ração + mortalidade)',phone(`${gh('Novo lançamento')}<div class="body"><div class="form">
+  <div class="fl" style="margin-top:6px">Aviário</div>
+  <div class="frow"><div class="i">${S(I.house)}</div><div class="f">Aviário 1 <em>⌄</em></div></div><hr>
+  <div class="fl">Lote</div>
+  <div class="frow"><div class="i">${S(I.hen)}</div><div class="f">Lote 24 <em>⌄</em></div></div><hr>
+  <div class="fl">Quantidade de ração (kg)</div>
+  <div class="frow"><div class="i">${S(I.bag)}</div><div class="f">100 <em>kg</em></div></div><hr>
+  <div class="fl">Mortalidade (aves)</div>
+  <div class="frow"><div class="i plus">+</div><div class="f">2 <em>aves</em></div></div><hr>
+  <div class="fl">Observação</div>
+  <div class="frow"><div class="i">${S(I.file)}</div><div class="f ta">Ração normal. Aves ativas.</div></div>
+  <div class="count">24/200</div>
+  <div class="save">${S(I.save)} Salvar registro</div>
+</div></div>`,'lancar',true)));
+
+G.push(fig('Fotos','Primeira opção: câmera do GranjaCam',phone(`${gh('Foto da granja')}<div class="body"><div class="content" style="padding-top:12px">
+  <p style="font-size:13px;color:var(--muted)">Registre fotos de aviários, ração ou equipamentos, ou acompanhe a câmera da granja.</p>
+  <div class="seg" id="seg"><div class="on" data-p="cam">${S(I.cam,'sg')}GranjaCam</div><div data-p="foto">${S(I.camI,'sg')}Foto</div></div>
+  <div id="pane-cam">
+    <div class="video"><video id="vid" src="media/pintos-fonte.mp4" muted loop playsinline autoplay preload="auto"></video><canvas id="cv" width="660" height="377"></canvas><span class="live">AO VIVO</span><span class="c">Pinteiro 1 · detecção por ave</span></div>
+    <div class="kp" style="margin-top:12px"><div class="card"><small>PINTOS</small><b id="k-pinto">0</b></div><div class="card"><small>GALINHAS</small><b id="k-gal">0</b></div><div class="card"><small>RASTREADAS</small><b id="k-ids">0</b></div></div>
+    <div class="card row" style="margin-top:12px"><div class="ic">${S(I.chart)}</div><div><b>Rastreamento em tempo real</b><span class="s">Cada ave mantém o mesmo número</span></div></div>
+  </div>
+  <div id="pane-foto" style="display:none">
+    <div class="photo"><div class="dots"></div><div class="feeder"></div></div>
+    <div class="btns" style="margin-top:12px"><div class="p">${S(I.camI)}Foto</div><div class="s">${S(I.img)}Galeria</div></div>
+    <div class="card done" style="margin-top:12px"><div class="th"></div><div style="flex:1"><b>Foto registrada!</b><a>Adicionar outra</a></div><div class="ok">${S(I.check)}</div></div>
+  </div>
+</div></div>`,'fotos',true)));
+
+document.getElementById('grid').innerHTML=G.join('');
+
+document.querySelectorAll('#seg div').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#seg div').forEach(x=>x.classList.toggle('on',x===b));
+  document.getElementById('pane-cam').style.display=b.dataset.p==='cam'?'block':'none';
+  document.getElementById('pane-foto').style.display=b.dataset.p==='foto'?'block':'none';
+  const v=document.getElementById('vid'); if(b.dataset.p==='cam'){v.play().catch(()=>{});}else{v.pause();}
+}));
+(function(){
+  const D=window.DETECCOES, v=document.getElementById('vid'), cv=document.getElementById('cv');
+  if(!D||!v||!cv) return;
+  const ctx=cv.getContext('2d'), W=cv.width, H=cv.height, cor={pinto:'#ffd23f',galinha:'#ff7a45',galo:'#ff4d6d'};
+  const kp=document.getElementById('k-pinto'), kg=document.getElementById('k-gal'), ki=document.getElementById('k-ids');
+  const vistos=new Set(); let ultimo=-1, ultimoLoop=0;
+  function desenha(){
+    const i=Math.min(D.quadros.length-1,Math.max(0,Math.floor(v.currentTime*D.fps+0.001)));
+    if(v.currentTime<ultimoLoop-1){vistos.clear();} ultimoLoop=v.currentTime;
+    if(i!==ultimo){
+      ultimo=i; ctx.clearRect(0,0,W,H); let np=0,ng=0;
+      ctx.lineWidth=1.6; ctx.font='600 10px Inter,Arial'; ctx.textBaseline='bottom';
+      for(const [id,cl,conf,x1,y1,x2,y2] of D.quadros[i].d){
+        vistos.add(cl+id); if(cl==='pinto')np++; else ng++;
+        const c=cor[cl]||'#fff', x=x1*W, y=y1*H, w=(x2-x1)*W, h=(y2-y1)*H;
+        ctx.strokeStyle=c; ctx.strokeRect(x,y,w,h);
+        const t=(cl==='pinto'?'':cl[0].toUpperCase()+cl.slice(1)+' ')+'#'+id, tw=ctx.measureText(t).width+6;
+        if(cl!=='pinto'||w>16){ctx.fillStyle=c;ctx.fillRect(x,y-13,tw,13);ctx.fillStyle='#1a1a1a';ctx.fillText(t,x+3,y-1);}
+      }
+      kp.textContent=np; kg.textContent=ng; ki.textContent=vistos.size;
+    }
+    if('requestVideoFrameCallback' in v) v.requestVideoFrameCallback(desenha); else requestAnimationFrame(desenha);
+  }
+  v.addEventListener('play',desenha); v.play().catch(()=>{}); desenha();
+})();
+</script>
+</body>
+</html>

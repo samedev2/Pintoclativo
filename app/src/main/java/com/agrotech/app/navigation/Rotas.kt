@@ -28,13 +28,19 @@ object Rotas {
     const val NOVO_RECEBIMENTO = "lotes/{loteId}/racao/novo"
     fun novoRecebimento(loteId: Long) = "lotes/$loteId/racao/novo"
 
+    /** Raiz da lista de unidades/lotes (agora dentro da aba Mais). */
+    const val LOTES_RAIZ = "lotes"
+
+    /** Perfil e sair (agora dentro da aba Mais). */
+    const val PERFIL = "perfil"
+
     const val OCR_CAMERA = "ocr"
 
     /** Scanner de demonstração aberto pelo botão central: QR Code ou OCR. */
     const val SCANNER = "scanner"
 
-    /** Tela principal (autenticado). Hospeda a BottomNavBar com 4 abas
-     *  (Início, Lotes, Relatórios, Perfil) + sub-telas de Lotes. */
+    /** Tela principal (autenticado). Hospeda a BottomNavBar com 5 abas
+     *  (Início, Lançar, Fotos, Relatórios, Mais) + sub-telas de Lotes. */
     const val MAIN = "main"
 
     /** Tela de detalhe de um relatório (mortalidade, peso, ração, check-ins).

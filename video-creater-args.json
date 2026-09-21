@@ -1,0 +1,13 @@
+{
+  "model": "MiniMax-H3",
+  "duration": 5,
+  "ratio": "16:9",
+  "resolution": "2K",
+  "reference_images": [
+    {
+      "mime_type": "image/png",
+      "url": "https://matrix-internal.oss-us-east-1.aliyuncs.com/user_file_upload_tmp%2F2026-09-21%2F5bbce0f9-0f70-4207-89c8-d379cb7e12f3.png?x-oss-credential=LTAI5t9dXq2sLrMZ8f1XfiFZ%2F20260921%2Fus-east-1%2Foss%2Faliyun_v4_request&x-oss-date=20260921T040311Z&x-oss-expires=3600&x-oss-signature=68f422724ba95242c7c29c11f8cbc7665b635c7172b67307b1c9c9e4bae7fb01&x-oss-signature-version=OSS4-HMAC-SHA256"
+    }
+  ],
+  "prompt": "integrated_multimodal_description: A realistic top-down aerial view of a commercial poultry barn interior. The camera looks straight down at a flock of dozens of fluffy pale-yellow baby chicks scattered across a floor covered in dark brown wood-shaving bedding. Long parallel lines of red-and-yellow plastic feeders (red conical drinkers mounted on yellow trays) run diagonally across the frame, casting soft shadows on the floor. The young chicks move naturally and unpredictably: several peck at the ground in short, rapid head-bobs foraging for spilled feed; others take a few quick steps between feeders; a few stand still with heads tilted, looking around; one or two briefly huddle together before separating again. Their tiny shifting shadows track each bird as it moves. The overhead industrial structure — metal rafters, hanging water lines, feeder suspension cables, and fluorescent tubes — frames the upper edge of the visible floor area as seen from directly above. Lighting is even, slightly warm, and naturalistic, typical of an indoor broiler house. The camera holds a stable top-down position with a very slow, smooth drift to keep the flock centered. Chicks exhibit varied, organic trajectories with no synchronized movement, producing a dense, naturalistic motion field ideal for evaluating computer-vision multi-object tracking algorithms.\n\noverall_soundscape: Continuous ambient barn sound: the soft constant peeping and chirping of a large flock of young chicks, occasional short clucks, the faint rustle of wood shavings under tiny feet, and a low-frequency hum of ventilation equipment in the background.\n\nnon_diegetic_music: N/A."
+}

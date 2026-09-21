@@ -28,7 +28,10 @@ import com.agrotech.app.navigation.Rotas
 import com.agrotech.app.ui.common.AbaNav
 import com.agrotech.app.ui.common.BottomNavBar
 import com.agrotech.app.ui.common.rememberAppContainer
+import com.agrotech.app.ui.fotos.FotosScreen
 import com.agrotech.app.ui.inicio.InicioScreen
+import com.agrotech.app.ui.lancar.LancarScreen
+import com.agrotech.app.ui.mais.MaisScreen
 import com.agrotech.app.ui.lote.LoteDetalheScreen
 import com.agrotech.app.ui.lote.LoteDetalheViewModel
 import com.agrotech.app.ui.lote.racao.NovoRecebimentoScreen
@@ -38,9 +41,8 @@ import com.agrotech.app.ui.perfil.PerfilScreen
 import com.agrotech.app.ui.relatorios.RelatoriosScreen
 
 /**
- * Tela principal do app autenticado. Substitui a navegação por
- * NavController puro por um modelo de **4 abas fixas** com bottom
- * bar sempre visível.
+ * Tela principal do app autenticado: modelo de **5 abas fixas**
+ * (Início, Lançar, Fotos, Relatórios, Mais) com bottom bar sempre visível.
  *
  * Cada aba é um destino raiz do `NavHost` interno. As sub-telas
  * (ex.: `LoteDetalheScreen` dentro da aba Lotes) ficam na mesma
@@ -68,30 +70,25 @@ fun MainScaffold(
     val rotaAtual = backStackEntry?.destination?.route
     val abaAtual = AbaNav.daRota(rotaAtual)
 
+    // Navega pra raiz da aba. `popUpTo(startDestination)` + `saveState` + `restoreState`
+    // faz cada aba manter seu próprio back stack — trocar de aba não acumula histórico.
+    val irParaAba: (AbaNav) -> Unit = { aba ->
+        navController.navigate(aba.rota) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
     Scaffold(
         modifier = Modifier.imePadding(),
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             BottomNavBar(
                 abaAtual = abaAtual,
-                aoEscanear = {
-                    navController.navigate(Rotas.SCANNER) {
-                        launchSingleTop = true
-                    }
-                },
-                aoSelecionar = { aba ->
-                    // Navega pra raiz da aba. `popUpTo(startDestination)`
-                    // + `saveState` + `restoreState` garante que cada
-                    // aba mantém seu próprio back stack independente —
-                    // trocar de aba não acumula histórico.
-                    navController.navigate(aba.rota) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
+                aoSelecionar = irParaAba
             )
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0)
@@ -111,14 +108,33 @@ fun MainScaffold(
                 // === Aba Início ===
                 composable(AbaNav.INICIO.rota) {
                     InicioScreen(
-                        aoAbrirLote = { unidadeId, unidadeNome ->
-                            navController.navigate(Rotas.lotes(unidadeId, unidadeNome))
-                        }
+                        aoAbrirLotes = { navController.navigate(Rotas.LOTES_RAIZ) },
+                        aoAbrirRelatorios = { irParaAba(AbaNav.RELATORIOS) },
+                        aoAbrirPerfil = { navController.navigate(Rotas.PERFIL) }
+                    )
+                }
+
+                // === Aba Lançar (novo lançamento) ===
+                composable(AbaNav.LANCAR.rota) {
+                    LancarScreen(aoVoltar = { irParaAba(AbaNav.INICIO) })
+                }
+
+                // === Aba Fotos (GranjaCam em primeiro + foto do celular) ===
+                composable(AbaNav.FOTOS.rota) {
+                    FotosScreen(aoVoltar = { irParaAba(AbaNav.INICIO) })
+                }
+
+                // === Aba Mais (unidades e lotes, scanner, perfil) ===
+                composable(AbaNav.MAIS.rota) {
+                    MaisScreen(
+                        aoAbrirLotes = { navController.navigate(Rotas.LOTES_RAIZ) },
+                        aoAbrirScanner = { navController.navigate(Rotas.SCANNER) { launchSingleTop = true } },
+                        aoAbrirPerfil = { navController.navigate(Rotas.PERFIL) }
                     )
                 }
 
                 // === Aba Lotes — raiz: lista de unidades ===
-                composable(AbaNav.LOTES.rota) {
+                composable(Rotas.LOTES_RAIZ) {
                     com.agrotech.app.ui.lotes.LotesAbaRoot(
                         aoAbrirUnidade = { unidade ->
                             navController.navigate(Rotas.lotes(unidade.id, unidade.nome))
@@ -159,7 +175,7 @@ fun MainScaffold(
                         aoVoltar = { navController.popBackStack() },
                         aoSalvar = { loteId ->
                             navController.navigate(Rotas.loteDetalhe(loteId)) {
-                                popUpTo(AbaNav.LOTES.rota) { inclusive = false }
+                                popUpTo(Rotas.LOTES_RAIZ) { inclusive = false }
                             }
                         }
                     )
@@ -238,7 +254,7 @@ fun MainScaffold(
                 }
 
                 // === Aba Perfil ===
-                composable(AbaNav.PERFIL.rota) {
+                composable(Rotas.PERFIL) {
                     PerfilScreen(aoSair = aoSair)
                 }
             }
