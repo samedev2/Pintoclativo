@@ -27,6 +27,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -75,6 +78,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
@@ -188,7 +192,7 @@ private fun GranjaCamMock(modifier: Modifier) {
     }
     var aves by remember { mutableStateOf<List<AveDetectada>>(emptyList()) }
     var rastreadas by remember { mutableIntStateOf(0) }
-    var telaCheia by rememberSaveable { mutableStateOf(false) }
+    var telaCheia by remember { mutableStateOf(false) }
     var filtro by rememberSaveable { mutableIntStateOf(FILTRO_PADRAO) }
     // Última posição do vídeo, para o modo paisagem continuar de onde parou (não precisa recompor a tela).
     // [0] = clipe (vídeo) e [1] = posição em ms dentro do clipe.
@@ -446,6 +450,24 @@ private fun VideoTextura(
     )
 }
 
+/** Faz a janela do diálogo ocupar a tela toda e esconde as barras do sistema. */
+private fun ajustarJanelaTelaCheia(view: android.view.View) {
+    val janela = (view.parent as? DialogWindowProvider)?.window ?: return
+    janela.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+        // Desenha por baixo do recorte da câmera frontal (senão sobra uma faixa do app ao lado).
+        janela.attributes = janela.attributes.also {
+            it.layoutInDisplayCutoutMode = android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+        }
+    }
+    WindowCompat.setDecorFitsSystemWindows(janela, false)
+    WindowCompat.getInsetsController(janela, view).apply {
+        systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        hide(WindowInsetsCompat.Type.systemBars())
+    }
+    view.requestLayout()
+}
+
 /**
  * Modo paisagem em tela cheia (imersivo): o vídeo ocupa a largura da tela e dá para arrastar e ampliar
  * com dois dedos (1x a 4x). Contadores e legenda ficam por cima; o botão no canto (ou o voltar) fecha.
@@ -472,17 +494,16 @@ private fun ModoPaisagem(
         )
     ) {
         // Tela cheia de verdade: janela do diálogo ocupa tudo e as barras do sistema ficam escondidas.
+        // A Activity trata a rotação sem ser recriada (configChanges), então a janela do diálogo não se
+        // redimensiona sozinha: reaplica o tamanho toda vez que a orientação ou o tamanho da tela mudam.
         val view = LocalView.current
-        SideEffect {
-            val janela = (view.parent as? DialogWindowProvider)?.window
-            if (janela != null) {
-                janela.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-                WindowCompat.setDecorFitsSystemWindows(janela, false)
-                WindowCompat.getInsetsController(janela, view).apply {
-                    systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                    hide(WindowInsetsCompat.Type.systemBars())
-                }
-            }
+        val configuracao = LocalConfiguration.current
+        SideEffect { ajustarJanelaTelaCheia(view) }
+        LaunchedEffect(configuracao.orientation, configuracao.screenWidthDp, configuracao.screenHeightDp) {
+            delay(60)
+            ajustarJanelaTelaCheia(view)
+            delay(300) // a rotação anima; confirma o tamanho no fim
+            ajustarJanelaTelaCheia(view)
         }
 
         BoxWithConstraints(Modifier.fillMaxSize().background(Color.Black)) {
@@ -490,6 +511,8 @@ private fun ModoPaisagem(
             val alturaPx = constraints.maxHeight.toFloat()
             // O vídeo (retrato) ocupa a largura da tela; a parte que passa da altura se vê arrastando.
             val alturaConteudo = larguraPx / PROPORCAO_VIDEO
+            // Pinça para fora até o vídeo caber inteiro na altura da tela (o cercado todo).
+            val escalaMinima = minOf(1f, alturaPx / alturaConteudo)
             var escala by remember { mutableFloatStateOf(1f) }
             var desloc by remember { mutableStateOf(Offset.Zero) }
 
@@ -512,7 +535,7 @@ private fun ModoPaisagem(
                     .clipToBounds()
                     .pointerInput(larguraPx, alturaPx) {
                         detectTransformGestures { centro, pan, zoom, _ ->
-                            val nova = (escala * zoom).coerceIn(1f, ZOOM_MAXIMO)
+                            val nova = (escala * zoom).coerceIn(escalaMinima, ZOOM_MAXIMO)
                             val fator = nova / escala
                             desloc = limitar(centro - (centro - desloc) * fator + pan, nova)
                             escala = nova
@@ -549,33 +572,41 @@ private fun ModoPaisagem(
                 }
             }
 
-            EtiquetaAoVivo(Modifier.align(Alignment.TopStart).padding(12.dp))
-            BotaoRedondo(
-                icone = Icons.Filled.FullscreenExit,
-                descricao = "Sair do modo paisagem",
-                modifier = Modifier.align(Alignment.TopEnd).padding(12.dp),
-                tamanho = 44.dp,
-                aoClicar = { aoFechar(posicao[0], posicao[1]) }
-            )
-            Row(
-                modifier = Modifier.align(Alignment.BottomStart).padding(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ChipContador("PINTOS", aves.count { it.classe == "pinto" })
-                ChipContador("GALINHAS", aves.count { it.classe == "galinha" })
-                ChipContador("COMEDOUROS", aves.count { it.classe == CLASSE_COMEDOURO })
-                ChipContador("RASTREADAS", rastreadas)
-            }
-            FiltroDeItens(
-                filtro = filtro,
-                aoAlternar = aoAlternarFiltro,
-                escuro = true,
+            // Controles por cima do vídeo, dentro da área segura (fora do recorte da câmera e das bordas).
+            Box(
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
                     .padding(12.dp)
-                    .background(Color.Black.copy(alpha = 0.55f), RoundedCornerShape(8.dp))
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            )
+            ) {
+                EtiquetaAoVivo(Modifier.align(Alignment.TopStart))
+                BotaoRedondo(
+                    icone = Icons.Filled.FullscreenExit,
+                    descricao = "Sair do modo paisagem",
+                    modifier = Modifier.align(Alignment.TopEnd),
+                    tamanho = 44.dp,
+                    aoClicar = { aoFechar(posicao[0], posicao[1]) }
+                )
+                Column(
+                    modifier = Modifier.align(Alignment.BottomStart),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FiltroDeItens(
+                        filtro = filtro,
+                        aoAlternar = aoAlternarFiltro,
+                        escuro = true,
+                        modifier = Modifier
+                            .background(Color.Black.copy(alpha = 0.55f), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ChipContador("PINTOS", aves.count { it.classe == "pinto" })
+                        ChipContador("GALINHAS", aves.count { it.classe == "galinha" })
+                        ChipContador("COMEDOUROS", aves.count { it.classe == CLASSE_COMEDOURO })
+                        ChipContador("RASTREADAS", rastreadas)
+                    }
+                }
+            }
         }
     }
 }
