@@ -14,11 +14,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.FormatListBulleted
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.MoreHoriz
-import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -36,8 +35,11 @@ import com.agrotech.app.ui.theme.Hairline
 import com.agrotech.app.ui.theme.Muted
 
 /**
- * Abas da barra de navegação inferior (novo design AgroTech Granja): Início, Lançar, Fotos,
- * Relatórios e Mais. Ícones de linha; a aba ativa fica em verde profundo com um traço embaixo.
+ * Abas da barra de navegação inferior (novo design AgroTech Granja): Início, Lotes, Lançamentos
+ * e Mais. Ícones de linha; a aba ativa fica em verde profundo com um traço embaixo.
+ *
+ * A câmera ao vivo (GranjaCam) e a foto pelo celular não são mais abas — a câmera ao vivo abre
+ * pelo card "Acompanhar em tempo real" do Início, e a foto fica dentro de Mais.
  */
 enum class AbaNav(
     val rota: String,
@@ -45,26 +47,24 @@ enum class AbaNav(
     val icone: ImageVector
 ) {
     INICIO("inicio", "Início", Icons.Outlined.Home),
-    LANCAR("lancar", "Lançar", Icons.Outlined.Edit),
-    FOTOS("fotos", "Fotos", Icons.Outlined.PhotoCamera),
-    RELATORIOS("relatorios", "Relatórios", Icons.Outlined.BarChart),
+    LOTES("lotes", "Lotes", Icons.Outlined.FormatListBulleted),
+    LANCAMENTOS("lancamentos", "Lançamentos", Icons.Outlined.Edit),
     MAIS("mais", "Mais", Icons.Outlined.MoreHoriz);
 
     companion object {
         /**
-         * Mapeia a rota atual para a aba correspondente. Unidades, lotes, perfil e o scanner
-         * ficam agrupados na aba Mais; relatórios internos ficam em Relatórios.
+         * Mapeia a rota atual para a aba correspondente. Sub-telas de unidade/lote ficam com
+         * Lotes destacada; sub-telas de lançamento ficam com Lançamentos destacada. Telas
+         * empilhadas por cima (câmera ao vivo, foto, scanner, perfil, relatório) não destacam
+         * nenhuma aba, porque são acessadas a partir de mais de um lugar.
          */
         fun daRota(rotaAtual: String?): AbaNav? {
             if (rotaAtual == null) return null
             return when {
                 rotaAtual == INICIO.rota -> INICIO
-                rotaAtual == LANCAR.rota -> LANCAR
-                rotaAtual == FOTOS.rota -> FOTOS
-                rotaAtual == RELATORIOS.rota || rotaAtual.startsWith("${RELATORIOS.rota}/") -> RELATORIOS
-                rotaAtual == MAIS.rota || rotaAtual == "lotes" || rotaAtual == "perfil" ||
-                    rotaAtual == "ocr" || rotaAtual == "scanner" ||
-                    rotaAtual.startsWith("unidades/") || rotaAtual.startsWith("lotes/") -> MAIS
+                rotaAtual == LOTES.rota || rotaAtual.startsWith("unidades/") || rotaAtual.startsWith("lotes/") -> LOTES
+                rotaAtual == LANCAMENTOS.rota || rotaAtual.startsWith("${LANCAMENTOS.rota}/") -> LANCAMENTOS
+                rotaAtual == MAIS.rota -> MAIS
                 else -> null
             }
         }

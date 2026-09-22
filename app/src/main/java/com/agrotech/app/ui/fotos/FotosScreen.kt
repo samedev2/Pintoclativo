@@ -29,7 +29,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.Icon
@@ -46,7 +45,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -65,71 +63,12 @@ import com.agrotech.app.ui.theme.Ink
 import com.agrotech.app.ui.theme.Muted
 
 /**
- * Aba "Fotos" do novo design ("Foto da granja"). A primeira opção é o GranjaCam (câmeras da
- * granja, via serviço externo); a segunda é Foto (câmera e galeria do celular).
+ * Aba "Fotos" (acessada por Mais): registra fotos de aviários, ração ou equipamentos pela câmera
+ * do celular ou pela galeria. A câmera ao vivo (GranjaCam) saiu daqui — agora fica no card
+ * "Acompanhar em tempo real" do Início ([com.agrotech.app.ui.inicio.InicioScreen]).
  */
 @Composable
 fun FotosScreen(aoVoltar: () -> Unit) {
-    var opcao by rememberSaveable { mutableIntStateOf(0) }
-
-    Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
-        CabecalhoVerde(titulo = "Foto da granja", aoVoltar = aoVoltar)
-        Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp)) {
-            Text(
-                "Registre fotos de aviários, ração ou equipamentos, ou acompanhe a câmera da granja.",
-                fontSize = 13.sp,
-                color = Muted
-            )
-            Spacer(Modifier.height(12.dp))
-            Seletor(opcao = opcao, aoEscolher = { opcao = it })
-        }
-        Box(modifier = Modifier.weight(1f)) {
-            if (opcao == 0) GranjaCamPane(Modifier.fillMaxSize()) else FotoPane(Modifier.fillMaxSize())
-        }
-    }
-}
-
-@Composable
-private fun Seletor(opcao: Int, aoEscolher: (Int) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(FieldBg, RoundedCornerShape(10.dp))
-            .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        ItemSeletor("GranjaCam", Icons.Filled.Videocam, opcao == 0, { aoEscolher(0) }, Modifier.weight(1f))
-        ItemSeletor("Foto", Icons.Outlined.PhotoCamera, opcao == 1, { aoEscolher(1) }, Modifier.weight(1f))
-    }
-}
-
-@Composable
-private fun ItemSeletor(
-    titulo: String,
-    icone: ImageVector,
-    selecionado: Boolean,
-    aoClicar: () -> Unit,
-    modifier: Modifier
-) {
-    val cor = if (selecionado) DeepGreen else Muted
-    Row(
-        modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(if (selecionado) Color.White else Color.Transparent)
-            .clickable(onClick = aoClicar)
-            .padding(vertical = 10.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(icone, contentDescription = null, tint = cor, modifier = Modifier.size(18.dp))
-        Spacer(Modifier.width(8.dp))
-        Text(titulo, color = cor, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-    }
-}
-
-/** Foto do celular: câmera ou galeria. Por enquanto a foto não é enviada nem gravada (mock). */
-@Composable
-private fun FotoPane(modifier: Modifier) {
     val context = LocalContext.current
     // Começa com a foto de exemplo (pintos na granja), como no design, até o usuário tirar outra.
     var foto by remember { mutableStateOf<Any?>(R.drawable.foto_granja_exemplo) }
@@ -159,85 +98,95 @@ private fun FotoPane(modifier: Modifier) {
         if (ok) camera.launch(null) else permissao.launch(Manifest.permission.CAMERA)
     }
 
-    Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Box(
+    Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
+        CabecalhoVerde(titulo = "Foto da granja", aoVoltar = aoVoltar)
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(262f / 364f)
-                .clip(RoundedCornerShape(12.dp))
-                .background(FieldBg),
-            contentAlignment = Alignment.Center
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Previa(foto, Modifier.fillMaxSize())
-            if (foto == null) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Outlined.PhotoCamera, contentDescription = null, tint = Muted, modifier = Modifier.size(40.dp))
-                    Spacer(Modifier.height(8.dp))
-                    Text("Nenhuma foto ainda", color = Muted, fontSize = 14.sp)
+            Text(
+                "Registre fotos de aviários, ração ou equipamentos.",
+                fontSize = 13.sp,
+                color = Muted
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(262f / 364f)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(FieldBg),
+                contentAlignment = Alignment.Center
+            ) {
+                Previa(foto, Modifier.fillMaxSize())
+                if (foto == null) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.Outlined.PhotoCamera, contentDescription = null, tint = Muted, modifier = Modifier.size(40.dp))
+                        Spacer(Modifier.height(8.dp))
+                        Text("Nenhuma foto ainda", color = Muted, fontSize = 14.sp)
+                    }
                 }
             }
-        }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .background(DeepGreen, RoundedCornerShape(10.dp))
-                    .clickable { tirarFoto() }
-                    .padding(vertical = 15.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Outlined.PhotoCamera, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(8.dp))
-                Text("Foto", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(DeepGreen, RoundedCornerShape(10.dp))
+                        .clickable { tirarFoto() }
+                        .padding(vertical = 15.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Outlined.PhotoCamera, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Foto", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                }
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(FieldBg, RoundedCornerShape(10.dp))
+                        .border(BorderStroke(1.dp, Hairline), RoundedCornerShape(10.dp))
+                        .clickable { galeria.launch("image/*") }
+                        .padding(vertical = 15.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Outlined.Image, contentDescription = null, tint = Ink, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Galeria", color = Ink, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                }
             }
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .background(FieldBg, RoundedCornerShape(10.dp))
-                    .border(BorderStroke(1.dp, Hairline), RoundedCornerShape(10.dp))
-                    .clickable { galeria.launch("image/*") }
-                    .padding(vertical = 15.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Outlined.Image, contentDescription = null, tint = Ink, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(8.dp))
-                Text("Galeria", color = Ink, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-            }
-        }
 
-        if (total > 0) {
-            CartaoNovo(modifier = Modifier.fillMaxWidth()) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Previa(
-                        foto,
-                        Modifier
-                            .size(width = 64.dp, height = 52.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                    )
-                    Spacer(Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("Foto registrada!", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                        Text(
-                            "Adicionar outra",
-                            fontSize = 13.sp,
-                            color = DeepGreen,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.clickable { tirarFoto() }.padding(top = 2.dp)
+            if (total > 0) {
+                CartaoNovo(modifier = Modifier.fillMaxWidth()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Previa(
+                            foto,
+                            Modifier
+                                .size(width = 64.dp, height = 52.dp)
+                                .clip(RoundedCornerShape(8.dp))
                         )
-                    }
-                    Box(
-                        modifier = Modifier.size(38.dp).background(DeepGreen, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(Icons.Filled.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Foto registrada!", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                "Adicionar outra",
+                                fontSize = 13.sp,
+                                color = DeepGreen,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.clickable { tirarFoto() }.padding(top = 2.dp)
+                            )
+                        }
+                        Box(
+                            modifier = Modifier.size(38.dp).background(DeepGreen, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Filled.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
+                        }
                     }
                 }
             }

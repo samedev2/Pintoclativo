@@ -1,8 +1,8 @@
 package com.agrotech.app.data.mock
 
 /**
- * Dados de demonstração do novo design (Início e Lançar). Ficam fixos até existir backend:
- * o modelo Room atual tem Unidade e Lote, mas ainda não tem "Aviário".
+ * Dados de demonstração do novo design (Início, Lançamentos). Ficam fixos até existir backend:
+ * o modelo Room atual tem Unidade e Lote, mas ainda não tem "Aviário" nem fechamento diário.
  */
 object MockData {
     const val LOTES_ATIVOS = 4
@@ -20,4 +20,13 @@ object MockData {
         "Aviário 5" to "Lote 28",
         "Aviário 6" to "Lote 29"
     )
+
+    // === Fechamento diário / recebimento de ração (telas do Figma) ===
+    const val LOTE_ATUAL = "02"
+    const val DIA_ATUAL = 15
+    const val SEMANA_ATUAL = 3
+    const val SALDO_ANTES_DO_FECHAMENTO = 44000
+
+    val tiposRacao: List<String> = listOf("Pré-inicial", "Inicial", "Engorda 1", "Engorda 2", "Final 1", "Final 2")
+    val fornecedores: List<String> = listOf("AgroNutri", "Nutriave", "Ração Vale Verde")
 }

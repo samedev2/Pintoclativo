@@ -16,9 +16,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -35,10 +37,15 @@ import com.agrotech.app.ui.theme.DeepGreen
 import com.agrotech.app.ui.theme.FieldBg
 import com.agrotech.app.ui.theme.Muted
 
-/** Aba "Mais": atalhos para unidades e lotes, scanner de nota fiscal e perfil. */
+/**
+ * Aba "Mais": atalhos para o que não tem aba própria — fotos, desempenho do lote, relatórios,
+ * scanner de nota fiscal e perfil. Unidades e lotes viraram a aba Lotes.
+ */
 @Composable
 fun MaisScreen(
-    aoAbrirLotes: () -> Unit,
+    aoAbrirFotos: () -> Unit,
+    aoAbrirDesempenho: () -> Unit,
+    aoAbrirRelatorios: () -> Unit,
     aoAbrirScanner: () -> Unit,
     aoAbrirPerfil: () -> Unit
 ) {
@@ -59,7 +66,9 @@ fun MaisScreen(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Item(Icons.Filled.Pets, "Unidades e lotes", "Lotes, mortalidade, ração e pesagens", aoAbrirLotes)
+            Item(Icons.Filled.PhotoCamera, "Fotos", "Registre fotos de aviários e equipamentos", aoAbrirFotos)
+            Item(Icons.Filled.BarChart, "Desempenho do lote", "Acompanhe a evolução em tempo real", aoAbrirDesempenho)
+            Item(Icons.AutoMirrored.Filled.Assignment, "Relatórios", "Mortalidade, peso, ração e check-ins", aoAbrirRelatorios)
             Item(Icons.Filled.QrCodeScanner, "Escanear nota fiscal", "QR Code ou texto da nota", aoAbrirScanner)
             Item(Icons.Filled.Person, "Perfil", "Conta e sair", aoAbrirPerfil)
         }

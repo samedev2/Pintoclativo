@@ -768,3 +768,33 @@ private fun CaixasDasAves(aves: List<AveDetectada>, mostrarNomes: Boolean, modif
         }
     }
 }
+
+/**
+ * Prévia compacta e só de leitura da câmera, para o card "Acompanhar em tempo real" do Início:
+ * mesmo vídeo e caixas do [GranjaCamPane], sem filtro nem legenda. Toque abre a tela cheia normal
+ * (fora daqui, via [aoClicar]).
+ */
+@Composable
+fun GranjaCamMiniPreview(modifier: Modifier = Modifier, aoClicar: () -> Unit) {
+    val context = LocalContext.current
+    val deteccoes by produceState<DeteccoesMock?>(initialValue = null) {
+        value = withContext(Dispatchers.Default) { runCatching { DeteccoesMock.carregar(context) }.getOrNull() }
+    }
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFF1A1F1C))
+            .clickable(onClick = aoClicar)
+    ) {
+        if (!GranjaCamConfig.usaServico) {
+            VideoComDeteccoes(
+                modifier = Modifier.fillMaxSize(),
+                deteccoes = deteccoes,
+                clipeInicial = 0,
+                posicaoInicialMs = 0,
+                filtro = FILTRO_PADRAO
+            ) { _, _, _, _ -> }
+        }
+        EtiquetaAoVivo(Modifier.align(Alignment.TopStart).padding(8.dp))
+    }
+}

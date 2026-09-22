@@ -39,6 +39,24 @@ object Rotas {
     /** Scanner de demonstração aberto pelo botão central: QR Code ou OCR. */
     const val SCANNER = "scanner"
 
+    /** Câmera ao vivo (GranjaCam), aberta pelo card "Acompanhar em tempo real" do Início. */
+    const val CAMERA_AO_VIVO = "camera-ao-vivo"
+
+    /** Foto da granja pelo celular (câmera/galeria), acessada pela aba Mais. */
+    const val FOTO_CELULAR = "foto-celular"
+
+    /** Sub-tela: fechamento diário (mortalidade, descarte, ração usada, peso opcional). */
+    const val FECHAMENTO_DIARIO = "lancamentos/fechamento"
+
+    /** Sub-tela: recebimento de ração (nota, tipo, quantidade, fornecedor). */
+    const val RECEBIMENTO_RACAO = "lancamentos/recebimento"
+
+    /** Sub-tela: confirmação de sucesso, comum ao fechamento diário e ao recebimento de ração. */
+    const val LANCAMENTO_SALVO = "lancamentos/salvo"
+
+    /** Relatórios (mortalidade, peso, ração, check-ins), acessados pela aba Mais. */
+    const val RELATORIOS_RAIZ = "relatorios"
+
     /** Tela principal (autenticado). Hospeda a BottomNavBar com 5 abas
      *  (Início, Lançar, Fotos, Relatórios, Mais) + sub-telas de Lotes. */
     const val MAIN = "main"

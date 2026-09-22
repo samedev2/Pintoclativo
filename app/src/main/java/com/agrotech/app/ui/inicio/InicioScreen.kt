@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Person
@@ -36,13 +35,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,17 +49,17 @@ import com.agrotech.app.R
 import com.agrotech.app.data.mock.MockData
 import com.agrotech.app.ui.components.CartaoNovo
 import com.agrotech.app.ui.components.QuadroIcone
+import com.agrotech.app.ui.fotos.GranjaCamMiniPreview
 import com.agrotech.app.ui.theme.AmberBg
 import com.agrotech.app.ui.theme.AmberIcon
 import com.agrotech.app.ui.theme.DeepGreen
 import com.agrotech.app.ui.theme.DeepGreenBg
-import com.agrotech.app.ui.theme.FieldBg
 import com.agrotech.app.ui.theme.Muted
 import java.util.Calendar
 
 /**
- * Aba "Início" do novo design (AgroTech Granja): saudação, banner, quatro indicadores e o atalho
- * de desempenho do lote. Os números vêm de [MockData] (dados mockados por enquanto).
+ * Aba "Início" do novo design (AgroTech Granja): saudação por turno, banner, quatro indicadores e
+ * o card "Acompanhar em tempo real" (câmera ao vivo). Os números vêm de [MockData] (mockados).
  *
  * Não tem `Scaffold` próprio: é conteúdo dentro do [com.agrotech.app.ui.main.MainScaffold].
  */
@@ -68,7 +67,8 @@ import java.util.Calendar
 fun InicioScreen(
     aoAbrirLotes: () -> Unit,
     aoAbrirRelatorios: () -> Unit,
-    aoAbrirPerfil: () -> Unit
+    aoAbrirPerfil: () -> Unit,
+    aoAbrirCameraAoVivo: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -110,10 +110,11 @@ fun InicioScreen(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            val (saudacao, mensagemDoTurno) = saudacaoPorTurno()
             Column(modifier = Modifier.padding(horizontal = 2.dp, vertical = 6.dp)) {
-                Text(saudacao(), fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(saudacao, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Text(
-                    "Juntos por uma granja mais produtiva.",
+                    mensagemDoTurno,
                     fontSize = 14.sp,
                     color = Muted,
                     modifier = Modifier.padding(top = 2.dp)
@@ -167,34 +168,36 @@ fun InicioScreen(
                 )
             }
 
-            CartaoNovo(aoClicar = aoAbrirRelatorios, modifier = Modifier.fillMaxWidth()) {
+            // Câmera ao vivo (GranjaCam): substitui o antigo card "Desempenho do lote", que foi
+            // remanejado para a aba Mais.
+            CartaoNovo(aoClicar = aoAbrirCameraAoVivo, modifier = Modifier.fillMaxWidth()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(width = 40.dp, height = 34.dp)
-                            .background(FieldBg, RoundedCornerShape(8.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(Icons.Filled.BarChart, contentDescription = null, tint = DeepGreen, modifier = Modifier.size(22.dp))
-                    }
-                    Spacer(Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Desempenho do lote", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-                        Text("Acompanhe a evolução em tempo real", fontSize = 12.sp, color = Muted)
+                        Text("Acompanhar em tempo real", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                        Text("Câmera ao vivo do pinteiro", fontSize = 12.sp, color = Muted)
                     }
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Muted)
                 }
+                Spacer(Modifier.height(10.dp))
+                GranjaCamMiniPreview(
+                    modifier = Modifier.fillMaxWidth().height(150.dp),
+                    aoClicar = aoAbrirCameraAoVivo
+                )
             }
         }
     }
 }
 
-private fun saudacao(): String {
+/**
+ * Saudação e mensagem de acordo com o turno do aparelho (manhã, tarde ou noite), conforme pedido:
+ * manhã antes das 12h, tarde das 12h às 17h59, noite a partir das 18h.
+ */
+private fun saudacaoPorTurno(): Pair<String, String> {
     val hora = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
     return when {
-        hora < 12 -> "Bom dia!"
-        hora < 18 -> "Boa tarde!"
-        else -> "Boa noite!"
+        hora < 12 -> "Bom dia!" to "Lote forte, eficiência desde o primeiro raio de sol."
+        hora < 18 -> "Boa tarde!" to "Olho no manejo, avicultura de resultados todos os dias."
+        else -> "Boa noite!" to "Granja segura, produção e biosseguridade garantidas."
     }
 }
 
