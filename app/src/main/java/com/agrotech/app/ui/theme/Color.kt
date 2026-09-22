@@ -52,6 +52,14 @@ val GreenSecondary = Color(0xFF66BB6A)
 val GreenChipBg = Color(0xFFE8F5E9)
 val OnGreen = Color(0xFFFFFFFF)
 
+// === Novo design (AgroTech Granja): verde profundo, campos cinza-claro e alerta âmbar ===
+val DeepGreen = Color(0xFF26604A)
+val DeepGreenDark = Color(0xFF1C4A39)
+val DeepGreenBg = Color(0xFFE6F0EB)
+val FieldBg = Color(0xFFF3F5F4)
+val AmberIcon = Color(0xFFC9820A)
+val AmberBg = Color(0xFFFDF1DC)
+
 // === Compat (aliases pros nomes antigos) — manter até migrar todos os call sites ===
 @Deprecated("Use Ink")        val InkLight       = Ink
 @Deprecated("Use Muted")      val MutedTextLight = Muted

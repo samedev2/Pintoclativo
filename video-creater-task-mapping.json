@@ -1,0 +1,11 @@
+{
+  "provider_task_id": "444048804782327",
+  "submitted_model": "MiniMax-H3",
+  "output_file_path": "videos/444048804782327.mp4",
+  "submitted_at_ms": 1789963423134,
+  "last_query_at_ms": null,
+  "next_query_due_at_ms": 1789964023134,
+  "terminal_status": null,
+  "polling_cron_task_id": "5b7cdd78-5d82-444e-a774-cda67b40ca45",
+  "polling_cron_name": "video-result-444048804782327"
+}

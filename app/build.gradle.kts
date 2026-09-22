@@ -10,7 +10,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.agrotech.app"
+        applicationId = "com.agrotech.app.pinteiro"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
@@ -20,11 +20,27 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        // Só ARM (celulares). x86 e x86_64 são de emulador de PC e somavam ~35 MB de bibliotecas do ML Kit.
+        ndk {
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+        }
+
+        // URL do serviço GranjaCam (análise computacional em outro ambiente).
+        // Vazia = a opção GranjaCam usa o mock local. Preenchida (https://...)
+        // = abre o webviewer do serviço. Ex.: ./gradlew assembleDebug -PgranjacamUrl=https://cam.exemplo.com
+        val granjacamUrl = (project.findProperty("granjacamUrl") as String?) ?: ""
+        buildConfigField("String", "GRANJACAM_BASE_URL", "\"$granjacamUrl\"")
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8 e limpeza de recursos: só descartam código e recursos que ninguém usa (o app não perde nada).
+            isMinifyEnabled = true
+            isShrinkResources = true
+            // Assinado com a chave de debug para instalar por cima do app já instalado nos aparelhos de teste.
+            // Antes de publicar na Play Store, trocar por uma chave de release própria.
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -43,6 +59,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {

@@ -28,13 +28,37 @@ object Rotas {
     const val NOVO_RECEBIMENTO = "lotes/{loteId}/racao/novo"
     fun novoRecebimento(loteId: Long) = "lotes/$loteId/racao/novo"
 
+    /** Raiz da lista de unidades/lotes (agora dentro da aba Mais). */
+    const val LOTES_RAIZ = "lotes"
+
+    /** Perfil e sair (agora dentro da aba Mais). */
+    const val PERFIL = "perfil"
+
     const val OCR_CAMERA = "ocr"
 
     /** Scanner de demonstração aberto pelo botão central: QR Code ou OCR. */
     const val SCANNER = "scanner"
 
-    /** Tela principal (autenticado). Hospeda a BottomNavBar com 4 abas
-     *  (Início, Lotes, Relatórios, Perfil) + sub-telas de Lotes. */
+    /** Câmera ao vivo (GranjaCam), aberta pelo card "Acompanhar em tempo real" do Início. */
+    const val CAMERA_AO_VIVO = "camera-ao-vivo"
+
+    /** Foto da granja pelo celular (câmera/galeria), acessada pela aba Mais. */
+    const val FOTO_CELULAR = "foto-celular"
+
+    /** Sub-tela: fechamento diário (mortalidade, descarte, ração usada, peso opcional). */
+    const val FECHAMENTO_DIARIO = "lancamentos/fechamento"
+
+    /** Sub-tela: recebimento de ração (nota, tipo, quantidade, fornecedor). */
+    const val RECEBIMENTO_RACAO = "lancamentos/recebimento"
+
+    /** Sub-tela: confirmação de sucesso, comum ao fechamento diário e ao recebimento de ração. */
+    const val LANCAMENTO_SALVO = "lancamentos/salvo"
+
+    /** Relatórios (mortalidade, peso, ração, check-ins), acessados pela aba Mais. */
+    const val RELATORIOS_RAIZ = "relatorios"
+
+    /** Tela principal (autenticado). Hospeda a BottomNavBar com 5 abas
+     *  (Início, Lançar, Fotos, Relatórios, Mais) + sub-telas de Lotes. */
     const val MAIN = "main"
 
     /** Tela de detalhe de um relatório (mortalidade, peso, ração, check-ins).
