@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Scale
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -49,11 +50,11 @@ import com.agrotech.app.R
 import com.agrotech.app.data.mock.MockData
 import com.agrotech.app.ui.components.CartaoNovo
 import com.agrotech.app.ui.components.QuadroIcone
-import com.agrotech.app.ui.fotos.GranjaCamMiniPreview
 import com.agrotech.app.ui.theme.AmberBg
 import com.agrotech.app.ui.theme.AmberIcon
 import com.agrotech.app.ui.theme.DeepGreen
 import com.agrotech.app.ui.theme.DeepGreenBg
+import com.agrotech.app.ui.theme.FieldBg
 import com.agrotech.app.ui.theme.Muted
 import java.util.Calendar
 
@@ -169,20 +170,25 @@ fun InicioScreen(
             }
 
             // Câmera ao vivo (GranjaCam): substitui o antigo card "Desempenho do lote", que foi
-            // remanejado para a aba Mais.
+            // remanejado para a aba Mais. Só o indicador — sem prévia — porque a câmera de verdade
+            // já está a um toque, na tela cheia.
             CartaoNovo(aoClicar = aoAbrirCameraAoVivo, modifier = Modifier.fillMaxWidth()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(width = 40.dp, height = 34.dp)
+                            .background(FieldBg, RoundedCornerShape(8.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Filled.Videocam, contentDescription = null, tint = DeepGreen, modifier = Modifier.size(22.dp))
+                    }
+                    Spacer(Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Acompanhar em tempo real", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                         Text("Câmera ao vivo do pinteiro", fontSize = 12.sp, color = Muted)
                     }
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Muted)
                 }
-                Spacer(Modifier.height(10.dp))
-                GranjaCamMiniPreview(
-                    modifier = Modifier.fillMaxWidth().height(150.dp),
-                    aoClicar = aoAbrirCameraAoVivo
-                )
             }
         }
     }
