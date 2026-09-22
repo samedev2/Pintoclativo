@@ -9,4 +9,7 @@ object UltimoLancamento {
     var titulo: String = ""
     var subtitulo: String = ""
     var linhas: List<Pair<String, String>> = emptyList()
+
+    /** Foto tirada no fechamento diário (Bitmap), se houver. Só o fechamento usa este campo. */
+    var foto: Any? = null
 }

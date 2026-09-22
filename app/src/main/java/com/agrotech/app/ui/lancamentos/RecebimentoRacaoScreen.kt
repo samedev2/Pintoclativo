@@ -160,6 +160,7 @@ fun RecebimentoRacaoScreen(
                             return@clickable
                         }
                         erro = null
+                        UltimoLancamento.foto = null // recebimento não tem foto; evita mostrar a de um fechamento anterior
                         UltimoLancamento.titulo = "Recebimento salvo"
                         UltimoLancamento.subtitulo =
                             "O recebimento de ração foi registrado com sucesso no lote ${MockData.LOTE_ATUAL}."
